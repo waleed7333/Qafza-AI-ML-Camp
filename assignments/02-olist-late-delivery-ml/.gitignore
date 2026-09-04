@@ -1,0 +1,10 @@
+.venv/
+.env
+.ipynb_checkpoints/
+__pycache__/
+.pytest_cache/
+artifacts/**/*.parquet
+artifacts/**/*.joblib
+artifacts/**/*.npz
+artifacts/**/*.png
+artifacts/**/*.csv

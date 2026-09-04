@@ -1,0 +1,163 @@
+{
+  "table_profiles": {
+    "category_translation": {
+      "rows": 71,
+      "columns": 2,
+      "likely_keys": [
+        "product_category_name"
+      ],
+      "key_unique": true,
+      "exact_duplicate_rows": 0,
+      "grain": "one category translation",
+      "missing": {}
+    },
+    "customers": {
+      "rows": 99441,
+      "columns": 5,
+      "likely_keys": [
+        "customer_id"
+      ],
+      "key_unique": true,
+      "exact_duplicate_rows": 0,
+      "grain": "one order-specific customer record",
+      "missing": {}
+    },
+    "geolocation": {
+      "rows": 1000163,
+      "columns": 5,
+      "likely_keys": [
+        "geolocation_zip_code_prefix"
+      ],
+      "key_unique": false,
+      "exact_duplicate_rows": 261831,
+      "grain": "one observed coordinate/city for a ZIP prefix",
+      "missing": {}
+    },
+    "order_items": {
+      "rows": 112650,
+      "columns": 7,
+      "likely_keys": [
+        "order_id",
+        "order_item_id"
+      ],
+      "key_unique": true,
+      "exact_duplicate_rows": 0,
+      "grain": "one item position in an order",
+      "missing": {}
+    },
+    "order_payments": {
+      "rows": 103886,
+      "columns": 5,
+      "likely_keys": [
+        "order_id",
+        "payment_sequential"
+      ],
+      "key_unique": true,
+      "exact_duplicate_rows": 0,
+      "grain": "one payment transaction in an order",
+      "missing": {}
+    },
+    "order_reviews": {
+      "rows": 100000,
+      "columns": 7,
+      "likely_keys": [
+        "review_id"
+      ],
+      "key_unique": false,
+      "exact_duplicate_rows": 0,
+      "grain": "one submitted review record",
+      "missing": {
+        "review_comment_title": 88285,
+        "review_comment_message": 58245
+      }
+    },
+    "orders": {
+      "rows": 99441,
+      "columns": 8,
+      "likely_keys": [
+        "order_id"
+      ],
+      "key_unique": true,
+      "exact_duplicate_rows": 0,
+      "grain": "one order",
+      "missing": {
+        "order_approved_at": 160,
+        "order_delivered_carrier_date": 1783,
+        "order_delivered_customer_date": 2965
+      }
+    },
+    "products": {
+      "rows": 32951,
+      "columns": 9,
+      "likely_keys": [
+        "product_id"
+      ],
+      "key_unique": true,
+      "exact_duplicate_rows": 0,
+      "grain": "one product",
+      "missing": {
+        "product_category_name": 610,
+        "product_name_lenght": 610,
+        "product_description_lenght": 610,
+        "product_photos_qty": 610,
+        "product_weight_g": 2,
+        "product_length_cm": 2,
+        "product_height_cm": 2,
+        "product_width_cm": 2
+      }
+    },
+    "sellers": {
+      "rows": 3095,
+      "columns": 4,
+      "likely_keys": [
+        "seller_id"
+      ],
+      "key_unique": true,
+      "exact_duplicate_rows": 0,
+      "grain": "one seller",
+      "missing": {}
+    }
+  },
+  "final_rows": 99441,
+  "unique_orders": 99441,
+  "column_roles": {
+    "identifiers": [
+      "order_id",
+      "customer_id",
+      "customer_unique_id"
+    ],
+    "future_or_label_only": [
+      "order_status",
+      "order_approved_at",
+      "order_delivered_carrier_date",
+      "order_delivered_customer_date"
+    ],
+    "candidate_features": [
+      "order_purchase_timestamp",
+      "order_estimated_delivery_date",
+      "customer_zip_code_prefix",
+      "customer_city",
+      "customer_state",
+      "geo_lat",
+      "geo_lng",
+      "item_count",
+      "unique_product_count",
+      "unique_seller_count",
+      "total_price",
+      "total_freight",
+      "mean_product_weight_g",
+      "mean_product_volume_cm3",
+      "mean_product_photos_qty",
+      "dominant_product_category",
+      "dominant_seller_state",
+      "dominant_seller_zip_prefix",
+      "same_state_share",
+      "mean_customer_seller_distance_km",
+      "max_customer_seller_distance_km",
+      "payment_count",
+      "payment_value",
+      "max_payment_installments",
+      "dominant_payment_type"
+    ]
+  }
+}

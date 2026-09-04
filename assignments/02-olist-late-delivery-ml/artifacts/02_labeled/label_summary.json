@@ -1,0 +1,25 @@
+{
+  "source_rows": 99441,
+  "unlabeled_rows": 2965,
+  "labeled_rows": 96476,
+  "on_time_count": 89941,
+  "late_count": 6535,
+  "on_time_pct": 93.22629462249678,
+  "late_pct": 6.773705377503212,
+  "on_time_to_late_ratio": 13.762968630451416,
+  "same_calendar_date_delivered_after_midnight": 1292,
+  "changed_from_timestamp_late_to_calendar_on_time": 1292,
+  "percentage_of_labeled": 1.339193167212571,
+  "all_now_classified_on_time": true,
+  "convention": "late only when normalized actual date > normalized estimated date",
+  "missing_actual_by_status": {
+    "shipped": 1107,
+    "canceled": 619,
+    "unavailable": 609,
+    "invoiced": 314,
+    "processing": 301,
+    "delivered": 8,
+    "created": 5,
+    "approved": 2
+  }
+}
