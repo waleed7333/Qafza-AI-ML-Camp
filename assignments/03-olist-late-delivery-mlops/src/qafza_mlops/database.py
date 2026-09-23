@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
-
 
 DDL = """
 CREATE SCHEMA IF NOT EXISTS serving;
@@ -68,7 +67,7 @@ def store_prediction(
             statement,
             {
                 "request_id": request_id,
-                "created_at": datetime.now(timezone.utc),
+                "created_at": datetime.now(UTC),
                 "input_payload": json.dumps(payload, default=str),
                 "prediction": prediction,
                 "probability": probability,

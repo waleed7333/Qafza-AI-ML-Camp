@@ -1,6 +1,5 @@
 from src.qafza_mlops.features import FEATURE_WHITELIST, SOURCE_COLUMNS
 
-
 FORBIDDEN = {
     "order_delivered_customer_date",
     "order_delivered_carrier_date",

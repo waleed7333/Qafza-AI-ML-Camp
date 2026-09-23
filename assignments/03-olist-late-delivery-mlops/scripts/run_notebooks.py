@@ -7,7 +7,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOKS = sorted((ROOT / "notebooks").glob("0[1-6]_*.ipynb"))
 

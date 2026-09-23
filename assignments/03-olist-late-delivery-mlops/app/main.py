@@ -30,7 +30,6 @@ from src.qafza_mlops.monitoring import LATENCY, MODEL_INFO, PREDICTIONS, REQUEST
 from src.qafza_mlops.prediction import Predictor
 from src.qafza_mlops.validation import DataValidationError
 
-
 LOGGER = logging.getLogger(__name__)
 
 

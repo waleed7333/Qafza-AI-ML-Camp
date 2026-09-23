@@ -12,7 +12,6 @@ import mlflow
 import mlflow.sklearn
 from mlflow import MlflowClient
 
-
 ROOT = Path(__file__).resolve().parents[1]
 FEATURE_DIR = ROOT / "artifacts" / "05_features"
 MODEL_DIR = ROOT / "artifacts" / "06_model"

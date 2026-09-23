@@ -2,7 +2,6 @@
 
 from prometheus_client import Counter, Gauge, Histogram
 
-
 REQUESTS = Counter(
     "qafza_prediction_requests_total",
     "Prediction requests received",

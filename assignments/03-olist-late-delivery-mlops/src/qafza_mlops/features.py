@@ -10,7 +10,6 @@ import holidays
 import numpy as np
 import pandas as pd
 
-
 BASE_NUMERIC = [
     "item_count",
     "unique_product_count",
