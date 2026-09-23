@@ -24,13 +24,19 @@ def validate_inference_frame(frame: pd.DataFrame, settings: Settings) -> None:
 
     expectations = [
         gx.expectations.ExpectColumnValuesToBeBetween(column="item_count", min_value=1),
-        gx.expectations.ExpectColumnValuesToBeBetween(column="unique_product_count", min_value=1),
-        gx.expectations.ExpectColumnValuesToBeBetween(column="unique_seller_count", min_value=1),
+        gx.expectations.ExpectColumnValuesToBeBetween(
+            column="unique_product_count", min_value=1
+        ),
+        gx.expectations.ExpectColumnValuesToBeBetween(
+            column="unique_seller_count", min_value=1
+        ),
         gx.expectations.ExpectColumnValuesToBeBetween(column="total_price", min_value=0),
         gx.expectations.ExpectColumnValuesToBeBetween(column="total_freight", min_value=0),
         gx.expectations.ExpectColumnValuesToBeBetween(column="payment_count", min_value=1),
         gx.expectations.ExpectColumnValuesToBeBetween(column="payment_value", min_value=0),
-        gx.expectations.ExpectColumnValuesToBeBetween(column="max_payment_installments", min_value=0),
+        gx.expectations.ExpectColumnValuesToBeBetween(
+            column="max_payment_installments", min_value=0
+        ),
         gx.expectations.ExpectColumnValuesToBeBetween(
             column="same_state_share", min_value=0, max_value=1
         ),

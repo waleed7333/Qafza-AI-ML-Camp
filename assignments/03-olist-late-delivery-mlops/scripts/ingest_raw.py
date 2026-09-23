@@ -37,7 +37,8 @@ def main() -> int:
     paths = {table: DATA_DIR / name for table, name in FILES.items()}
     missing = [str(path) for path in paths.values() if not path.is_file()]
     if missing:
-        raise SystemExit("Missing original Olist CSV files under data/raw:\n  " + "\n  ".join(missing))
+        message = "Missing original Olist CSV files under data/raw:\n  "
+        raise SystemExit(message + "\n  ".join(missing))
 
     schema_sql = (ROOT / "sql" / "schema.sql").read_text(encoding="utf-8")
     with connect() as connection, connection.cursor() as cursor:
