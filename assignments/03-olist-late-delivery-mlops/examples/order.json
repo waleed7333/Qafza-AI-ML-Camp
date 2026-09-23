@@ -1,0 +1,22 @@
+{
+  "item_count": 1,
+  "unique_product_count": 1,
+  "unique_seller_count": 1,
+  "total_price": 100.0,
+  "total_freight": 20.0,
+  "mean_product_weight_g": 500.0,
+  "mean_product_volume_cm3": 1000.0,
+  "mean_product_photos_qty": 2.0,
+  "payment_count": 1,
+  "payment_value": 120.0,
+  "max_payment_installments": 1,
+  "same_state_share": 1.0,
+  "mean_customer_seller_distance_km": 10.0,
+  "max_customer_seller_distance_km": 10.0,
+  "customer_state": "SP",
+  "dominant_product_category": "health_beauty",
+  "dominant_seller_state": "SP",
+  "dominant_payment_type": "credit_card",
+  "order_purchase_timestamp": "2018-01-02T10:00:00",
+  "order_estimated_delivery_date": "2018-01-12T10:00:00"
+}
