@@ -107,6 +107,16 @@ def _predict_one(request: Request, order: OrderRequest, request_id: str):
     PREDICTIONS.labels(
         label=result.label, model_version=result.model_version
     ).inc()
+    LOGGER.info(
+        "prediction request_id=%s input=%s output=%s probability=%.6f "
+        "latency_ms=%.2f model_version=%s",
+        request_id,
+        payload,
+        result.label,
+        result.probability,
+        latency_ms,
+        result.model_version,
+    )
     return result, latency_ms
 
 
@@ -116,19 +126,9 @@ def predict(request: Request, order: OrderRequest) -> PredictionResponse:
     route = "/predict"
     try:
         with LATENCY.labels(route=route).time():
-            result, latency_ms = _predict_one(request, order, request_id)
+            result, _ = _predict_one(request, order, request_id)
         REQUESTS.labels(route=route, status="success").inc()
-        LOGGER.info(
-            "prediction request_id=%s output=%s probability=%.6f latency_ms=%.2f model=%s",
-            request_id,
-            result.label,
-            result.probability,
-            latency_ms,
-            result.model_version,
-        )
-        return PredictionResponse(
-            **result.__dict__, request_id=request_id
-        )
+        return PredictionResponse(**result.__dict__, request_id=request_id)
     except DataValidationError as exc:
         REQUESTS.labels(route=route, status="invalid").inc()
         raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -158,9 +158,7 @@ def predict_batch(
                 request_id = uuid4().hex
                 result, _ = _predict_one(request, order, request_id)
                 responses.append(
-                    PredictionResponse(
-                        **result.__dict__, request_id=request_id
-                    )
+                    PredictionResponse(**result.__dict__, request_id=request_id)
                 )
         REQUESTS.labels(route=route, status="success").inc()
         return BatchPredictionResponse(predictions=responses)

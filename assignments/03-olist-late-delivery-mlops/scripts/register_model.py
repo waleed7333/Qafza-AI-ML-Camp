@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Track the selected experiment and register the final fitted model in MLflow."""
+"""Track candidate runs and register the selected fitted model in MLflow."""
 
 from __future__ import annotations
 
@@ -11,12 +11,32 @@ import joblib
 import mlflow
 import mlflow.sklearn
 from mlflow import MlflowClient
-from mlflow.exceptions import MlflowException
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FEATURE_DIR = ROOT / "artifacts" / "05_features"
 MODEL_DIR = ROOT / "artifacts" / "06_model"
+
+
+def log_candidates(metrics: dict) -> None:
+    for candidate in metrics["validation_candidates"]:
+        with mlflow.start_run(run_name="candidate-logistic-regression"):
+            mlflow.set_tag("run_role", "candidate")
+            mlflow.log_params(
+                {
+                    "model_type": "LogisticRegression",
+                    "C": candidate["C"],
+                    "class_weight": candidate["class_weight"],
+                }
+            )
+            mlflow.log_metric(
+                "validation_average_precision",
+                candidate["validation_average_precision"],
+            )
+            mlflow.log_metric(
+                "validation_roc_auc",
+                candidate["validation_roc_auc"],
+            )
 
 
 def main() -> int:
@@ -28,6 +48,7 @@ def main() -> int:
 
     metrics = json.loads((MODEL_DIR / "metrics.json").read_text())
     selection = metrics["selection"]
+    log_candidates(metrics)
 
     model = joblib.load(MODEL_DIR / "model.joblib")
     threshold_path = MODEL_DIR / "threshold.json"
@@ -36,6 +57,7 @@ def main() -> int:
     )
 
     with mlflow.start_run(run_name="selected-logistic-regression") as run:
+        mlflow.set_tag("run_role", "selected")
         mlflow.log_params(
             {
                 "model_type": "LogisticRegression",
@@ -63,7 +85,9 @@ def main() -> int:
             artifact_path="contract",
         )
         mlflow.log_artifact(str(threshold_path), artifact_path="contract")
-        mlflow.log_artifact(str(MODEL_DIR / "metrics.json"), artifact_path="evaluation")
+        mlflow.log_artifact(
+            str(MODEL_DIR / "metrics.json"), artifact_path="evaluation"
+        )
         mlflow.log_artifact(
             str(MODEL_DIR / "results_summary.md"), artifact_path="evaluation"
         )
@@ -71,24 +95,22 @@ def main() -> int:
         model_info = mlflow.sklearn.log_model(
             sk_model=model,
             artifact_path="model",
-        )
-        model_version = mlflow.register_model(
-            model_uri=model_info.model_uri,
-            name=registered_name,
+            registered_model_name=registered_name,
+            serialization_format="cloudpickle",
         )
 
+    if model_info.registered_model_version is None:
+        raise RuntimeError("MLflow did not return a registered model version")
+
     client = MlflowClient()
-    client.set_registered_model_alias(
-        registered_name, alias, model_version.version
-    )
+    version = str(model_info.registered_model_version)
+    client.set_registered_model_alias(registered_name, alias, version)
+    client.set_model_version_tag(registered_name, version, "assignment", "03")
     client.set_model_version_tag(
-        registered_name,
-        model_version.version,
-        "assignment",
-        "03",
+        registered_name, version, "validation_status", "passed"
     )
     print(
-        f"Registered {registered_name} version={model_version.version} "
+        f"Registered {registered_name} version={version} "
         f"alias={alias} run_id={run.info.run_id}"
     )
     return 0

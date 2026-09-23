@@ -66,7 +66,7 @@ def validate_inference_frame(frame: pd.DataFrame, settings: Settings) -> None:
     for expectation in expectations:
         result = batch.validate(expectation)
         if not result.success:
-            failures.append(expectation.expectation_type)
+            failures.append(expectation.__class__.__name__)
 
     if failures:
         raise DataValidationError(
