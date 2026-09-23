@@ -23,30 +23,14 @@ def validate_inference_frame(frame: pd.DataFrame, settings: Settings) -> None:
     batch = batch_definition.get_batch(batch_parameters={"dataframe": frame})
 
     expectations = [
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="item_count", min_value=1
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="unique_product_count", min_value=1
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="unique_seller_count", min_value=1
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="total_price", min_value=0
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="total_freight", min_value=0
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="payment_count", min_value=1
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="payment_value", min_value=0
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="max_payment_installments", min_value=0
-        ),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="item_count", min_value=1),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="unique_product_count", min_value=1),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="unique_seller_count", min_value=1),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="total_price", min_value=0),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="total_freight", min_value=0),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="payment_count", min_value=1),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="payment_value", min_value=0),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="max_payment_installments", min_value=0),
         gx.expectations.ExpectColumnValuesToBeBetween(
             column="same_state_share", min_value=0, max_value=1
         ),
@@ -69,6 +53,4 @@ def validate_inference_frame(frame: pd.DataFrame, settings: Settings) -> None:
             failures.append(expectation.__class__.__name__)
 
     if failures:
-        raise DataValidationError(
-            "Great Expectations validation failed: " + ", ".join(failures)
-        )
+        raise DataValidationError("Great Expectations validation failed: " + ", ".join(failures))

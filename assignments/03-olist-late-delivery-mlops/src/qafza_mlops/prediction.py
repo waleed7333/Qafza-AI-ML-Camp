@@ -32,9 +32,7 @@ class Predictor:
         matrix = self.bundle.preprocessor.transform(raw_features)
 
         if matrix.shape[1] != len(self.bundle.feature_names):
-            raise RuntimeError(
-                "Transformed feature width does not match saved feature contract"
-            )
+            raise RuntimeError("Transformed feature width does not match saved feature contract")
         if not np.isfinite(matrix).all():
             raise RuntimeError("Non-finite values remain after fitted preprocessing")
 
@@ -48,7 +46,5 @@ class Predictor:
                 probability=float(probability),
                 model_version=self.bundle.version,
             )
-            for prediction, probability in zip(
-                predictions, probabilities, strict=True
-            )
+            for prediction, probability in zip(predictions, probabilities, strict=True)
         ]

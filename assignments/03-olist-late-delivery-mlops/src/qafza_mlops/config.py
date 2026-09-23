@@ -40,15 +40,11 @@ def load_settings() -> Settings:
         app_version=raw["app"]["version"],
         max_batch_size=int(raw["app"]["max_batch_size"]),
         log_level=os.getenv("LOG_LEVEL", raw["app"]["log_level"]),
-        registered_model_name=os.getenv(
-            "MODEL_REGISTERED_NAME", raw["model"]["registered_name"]
-        ),
+        registered_model_name=os.getenv("MODEL_REGISTERED_NAME", raw["model"]["registered_name"]),
         model_alias=os.getenv("MODEL_ALIAS", raw["model"]["alias"]),
         allowed_states=tuple(raw["validation"]["allowed_states"]),
         allowed_payment_types=tuple(raw["validation"]["allowed_payment_types"]),
-        baseline_predicted_late_rate=float(
-            raw["monitoring"]["baseline_predicted_late_rate"]
-        ),
+        baseline_predicted_late_rate=float(raw["monitoring"]["baseline_predicted_late_rate"]),
         prediction_rate_alert_abs_delta=float(
             raw["monitoring"]["prediction_rate_alert_abs_delta"]
         ),

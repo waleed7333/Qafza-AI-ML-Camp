@@ -13,15 +13,19 @@ def main() -> int:
     settings = load_settings()
     engine = create_db_engine(settings.database_url)
     with engine.connect() as connection:
-        row = connection.execute(
-            text(
-                """
+        row = (
+            connection.execute(
+                text(
+                    """
                 SELECT count(*) AS n, avg(prediction::double precision) AS late_rate
                 FROM serving.prediction_logs
                 WHERE created_at >= now() - interval '24 hours'
                 """
+                )
             )
-        ).mappings().one()
+            .mappings()
+            .one()
+        )
     n = int(row["n"])
     if n == 0:
         print("No predictions in the last 24 hours; drift cannot be evaluated.")

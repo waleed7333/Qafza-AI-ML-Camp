@@ -17,9 +17,7 @@ def main() -> int:
     test = pd.read_parquet(root / "artifacts/03_splits/test.parquet").iloc[[0]]
     source = test[SOURCE_COLUMNS].copy()
 
-    local_preprocessor = joblib.load(
-        root / "artifacts/05_features/preprocessor.joblib"
-    )
+    local_preprocessor = joblib.load(root / "artifacts/05_features/preprocessor.joblib")
     local_model = joblib.load(root / "artifacts/06_model/model.joblib")
     local_matrix = local_preprocessor.transform(make_features(source))
     expected = float(local_model.predict_proba(local_matrix)[:, 1][0])
@@ -29,9 +27,7 @@ def main() -> int:
     actual = float(bundle.model.predict_proba(served_matrix)[:, 1][0])
 
     if not np.isclose(expected, actual, rtol=0, atol=1e-12):
-        raise SystemExit(
-            f"Parity FAILED: notebook={expected:.15f} serving={actual:.15f}"
-        )
+        raise SystemExit(f"Parity FAILED: notebook={expected:.15f} serving={actual:.15f}")
     print(f"Parity OK: probability={actual:.15f}")
     return 0
 

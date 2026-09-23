@@ -17,9 +17,7 @@ class FakePreprocessor:
 
 class FakeModel:
     def predict_proba(self, matrix):
-        return np.column_stack(
-            [np.full(len(matrix), 0.2), np.full(len(matrix), 0.8)]
-        )
+        return np.column_stack([np.full(len(matrix), 0.2), np.full(len(matrix), 0.8)])
 
 
 def fake_bundle():

@@ -13,9 +13,7 @@ class FakePreprocessor:
 
 class FakeModel:
     def predict_proba(self, matrix):
-        return np.column_stack(
-            [np.full(len(matrix), 0.2), np.full(len(matrix), 0.8)]
-        )
+        return np.column_stack([np.full(len(matrix), 0.2), np.full(len(matrix), 0.8)])
 
 
 def test_predictor_returns_probability_threshold_and_version(monkeypatch, sample_order):
@@ -33,9 +31,7 @@ def test_predictor_returns_probability_threshold_and_version(monkeypatch, sample
         version="7",
         run_id="run",
     )
-    result = Predictor(bundle, load_settings()).predict_frame(
-        pd.DataFrame([sample_order])
-    )[0]
+    result = Predictor(bundle, load_settings()).predict_frame(pd.DataFrame([sample_order]))[0]
 
     assert result.prediction == 1
     assert result.label == "late"

@@ -10,9 +10,7 @@ from src.qafza_mlops.config import Settings
 
 def configure_logging(settings: Settings) -> None:
     settings.log_file.parent.mkdir(parents=True, exist_ok=True)
-    formatter = logging.Formatter(
-        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
     root = logging.getLogger()
     root.setLevel(settings.log_level.upper())
     root.handlers.clear()

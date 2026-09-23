@@ -59,9 +59,7 @@ def make_features(frame: pd.DataFrame) -> pd.DataFrame:
 
     features = frame.copy()
     purchase = pd.to_datetime(features["order_purchase_timestamp"], errors="raise")
-    estimated = pd.to_datetime(
-        features["order_estimated_delivery_date"], errors="raise"
-    )
+    estimated = pd.to_datetime(features["order_estimated_delivery_date"], errors="raise")
 
     years = sorted(set(purchase.dt.year.astype(int).tolist()))
     brazil_holidays = holidays.Brazil(years=years)
@@ -72,12 +70,9 @@ def make_features(frame: pd.DataFrame) -> pd.DataFrame:
     features["purchase_is_holiday"] = purchase.dt.date.map(
         lambda date: int(date in brazil_holidays)
     )
-    features["promised_window_days"] = (
-        estimated - purchase
-    ).dt.total_seconds() / 86_400
-    features["freight_price_ratio"] = (
-        features["total_freight"]
-        / features["total_price"].replace(0, np.nan)
+    features["promised_window_days"] = (estimated - purchase).dt.total_seconds() / 86_400
+    features["freight_price_ratio"] = features["total_freight"] / features["total_price"].replace(
+        0, np.nan
     )
 
     return features[FEATURE_WHITELIST]

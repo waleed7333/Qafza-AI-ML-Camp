@@ -46,9 +46,7 @@ async def lifespan(app: FastAPI):
     app.state.bundle = bundle
     app.state.predictor = Predictor(bundle, settings)
 
-    MODEL_INFO.labels(
-        model_name=bundle.registered_name, model_version=bundle.version
-    ).set(1)
+    MODEL_INFO.labels(model_name=bundle.registered_name, model_version=bundle.version).set(1)
     LOGGER.info(
         "service_started model=%s version=%s alias=%s",
         bundle.registered_name,
@@ -103,9 +101,7 @@ def _predict_one(request: Request, order: OrderRequest, request_id: str):
         model_version=result.model_version,
         latency_ms=latency_ms,
     )
-    PREDICTIONS.labels(
-        label=result.label, model_version=result.model_version
-    ).inc()
+    PREDICTIONS.labels(label=result.label, model_version=result.model_version).inc()
     LOGGER.info(
         "prediction request_id=%s input=%s output=%s probability=%.6f "
         "latency_ms=%.2f model_version=%s",
@@ -138,17 +134,13 @@ def predict(request: Request, order: OrderRequest) -> PredictionResponse:
 
 
 @app.post("/predict-batch", response_model=BatchPredictionResponse)
-def predict_batch(
-    request: Request, body: BatchPredictionRequest
-) -> BatchPredictionResponse:
+def predict_batch(request: Request, body: BatchPredictionRequest) -> BatchPredictionResponse:
     route = "/predict-batch"
     limit = request.app.state.settings.max_batch_size
     if not body.orders:
         raise HTTPException(status_code=422, detail="orders must not be empty")
     if len(body.orders) > limit:
-        raise HTTPException(
-            status_code=413, detail=f"batch size exceeds configured limit {limit}"
-        )
+        raise HTTPException(status_code=413, detail=f"batch size exceeds configured limit {limit}")
 
     responses: list[PredictionResponse] = []
     try:
@@ -156,9 +148,7 @@ def predict_batch(
             for order in body.orders:
                 request_id = uuid4().hex
                 result, _ = _predict_one(request, order, request_id)
-                responses.append(
-                    PredictionResponse(**result.__dict__, request_id=request_id)
-                )
+                responses.append(PredictionResponse(**result.__dict__, request_id=request_id))
         REQUESTS.labels(route=route, status="success").inc()
         return BatchPredictionResponse(predictions=responses)
     except DataValidationError as exc:

@@ -30,15 +30,11 @@ def load_model_bundle(settings: Settings) -> ModelBundle:
     """Resolve an MLflow alias and load all fitted inference artifacts."""
     mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
     client = MlflowClient()
-    version = client.get_model_version_by_alias(
-        settings.registered_model_name, settings.model_alias
-    )
+    version = client.get_model_version_by_alias(settings.registered_model_name, settings.model_alias)
     if not version.run_id:
         raise RuntimeError("Resolved MLflow model version has no run_id")
 
-    model_uri = (
-        f"models:/{settings.registered_model_name}@{settings.model_alias}"
-    )
+    model_uri = f"models:/{settings.registered_model_name}@{settings.model_alias}"
     model = mlflow.sklearn.load_model(model_uri)
 
     cache = settings.artifact_cache_dir
