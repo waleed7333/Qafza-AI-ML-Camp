@@ -45,9 +45,7 @@ def load_settings() -> Settings:
         allowed_states=tuple(raw["validation"]["allowed_states"]),
         allowed_payment_types=tuple(raw["validation"]["allowed_payment_types"]),
         baseline_predicted_late_rate=float(raw["monitoring"]["baseline_predicted_late_rate"]),
-        prediction_rate_alert_abs_delta=float(
-            raw["monitoring"]["prediction_rate_alert_abs_delta"]
-        ),
+        prediction_rate_alert_abs_delta=float(raw["monitoring"]["prediction_rate_alert_abs_delta"]),
         latency_alert_ms=float(raw["monitoring"]["latency_alert_ms"]),
         error_rate_alert=float(raw["monitoring"]["error_rate_alert"]),
         log_file=PROJECT_ROOT / raw["paths"]["log_file"],

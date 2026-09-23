@@ -45,10 +45,14 @@ DERIVED_NUMERIC = [
 
 FEATURE_WHITELIST = BASE_NUMERIC + BASE_CATEGORICAL + DERIVED_NUMERIC
 
-SOURCE_COLUMNS = BASE_NUMERIC + BASE_CATEGORICAL + [
-    "order_purchase_timestamp",
-    "order_estimated_delivery_date",
-]
+SOURCE_COLUMNS = (
+    BASE_NUMERIC
+    + BASE_CATEGORICAL
+    + [
+        "order_purchase_timestamp",
+        "order_estimated_delivery_date",
+    ]
+)
 
 
 def make_features(frame: pd.DataFrame) -> pd.DataFrame:
