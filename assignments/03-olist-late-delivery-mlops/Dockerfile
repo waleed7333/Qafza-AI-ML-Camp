@@ -9,7 +9,8 @@ WORKDIR /app
 
 COPY requirements/runtime.txt /tmp/runtime.txt
 RUN python -m pip install --upgrade pip \
-    && python -m pip install -r /tmp/runtime.txt
+    && python -m pip install -r /tmp/runtime.txt \
+    && python -m pip check
 
 COPY app ./app
 COPY src ./src

@@ -10,7 +10,8 @@ pydantic-settings==2.15.0
 SQLAlchemy==2.0.54
 psycopg[binary]==3.2.3
 mlflow==3.16.1
-boto3==1.43.100
+boto3==1.43.75
+botocore==1.43.75
 great-expectations==1.23.1
 prometheus-client==0.26.0
 python-dotenv==1.1.1
