@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install install-dev up down bootstrap test lint format-check format parity dvc-track dvc-push dvc-pull
+.PHONY: install install-dev up down bootstrap test lint format-check format parity dvc-track dvc-push dvc-pull drift
 
 install:
 	python -m pip install -r requirements/runtime.txt -r requirements/training.txt
@@ -33,12 +33,15 @@ format:
 parity:
 	docker compose run --rm trainer python scripts/parity_check.py
 
+drift:
+	docker compose run --rm trainer python scripts/check_drift.py
+
 dvc-track:
-	dvc add data/raw artifacts
+	docker compose run --rm trainer dvc add data/raw artifacts
 	git add data/raw.dvc artifacts.dvc .gitignore
 
 dvc-push:
-	dvc push
+	docker compose run --rm trainer dvc push
 
 dvc-pull:
-	dvc pull
+	docker compose run --rm trainer dvc pull
