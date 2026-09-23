@@ -1,0 +1,19 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    QAFZA_CONFIG=/workspace/config/settings.toml
+
+WORKDIR /workspace
+
+COPY requirements/runtime.txt /tmp/runtime.txt
+COPY requirements/training.txt /tmp/training.txt
+COPY requirements/dev.txt /tmp/dev.txt
+
+RUN python -m pip install --upgrade pip \
+    && python -m pip install -r /tmp/runtime.txt \
+    && python -m pip install -r /tmp/training.txt \
+    && python -m pip install -r /tmp/dev.txt
+
+COPY . /workspace

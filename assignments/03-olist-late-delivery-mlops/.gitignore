@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+logs/*
+!logs/.gitkeep
+artifacts/
+models/cache/
+data/raw/
+.dvc/cache/
+.dvc/tmp/
+coverage.xml
+htmlcov/

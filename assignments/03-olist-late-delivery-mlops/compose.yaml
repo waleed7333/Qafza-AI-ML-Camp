@@ -1,0 +1,165 @@
+name: qafza-assignment-03
+
+x-common-env: &common-env
+  POSTGRES_DB: ${POSTGRES_DB:-qafza_mlops}
+  POSTGRES_USER: ${POSTGRES_USER:-qafza}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qafza_dev_password}
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-qafza}:${POSTGRES_PASSWORD:-qafza_dev_password}@postgres:5432/${POSTGRES_DB:-qafza_mlops}
+  MLFLOW_TRACKING_URI: http://mlflow:5000
+  MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+  AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-qafza_minio}
+  AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-qafza_minio_dev_password}
+  AWS_DEFAULT_REGION: us-east-1
+  QAFZA_CONFIG: /workspace/config/settings.toml
+
+services:
+  postgres:
+    image: postgres:16@sha256:4b7183ac05f8ef417db21fd72d71047a4238340c261d3cc3ddb6d579ab5071ae
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-qafza_mlops}
+      POSTGRES_USER: ${POSTGRES_USER:-qafza}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qafza_dev_password}
+    ports:
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qafza} -d ${POSTGRES_DB:-qafza_mlops}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-qafza_minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-qafza_minio_dev_password}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-qafza_minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-qafza_minio_dev_password}
+      MLFLOW_ARTIFACT_BUCKET: ${MLFLOW_ARTIFACT_BUCKET:-qafza-mlflow}
+      DVC_BUCKET: ${DVC_BUCKET:-qafza-dvc}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; do
+          sleep 2
+        done
+        mc mb --ignore-existing "local/$$MLFLOW_ARTIFACT_BUCKET"
+        mc mb --ignore-existing "local/$$DVC_BUCKET"
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - mlflow
+      - server
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      - --backend-store-uri
+      - postgresql+psycopg://${POSTGRES_USER:-qafza}:${POSTGRES_PASSWORD:-qafza_dev_password}@postgres:5432/${POSTGRES_DB:-qafza_mlops}
+      - --artifacts-destination
+      - s3://${MLFLOW_ARTIFACT_BUCKET:-qafza-mlflow}
+    environment:
+      <<: *common-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=2)"
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      <<: *common-env
+      QAFZA_CONFIG: /app/config/settings.toml
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  trainer:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /workspace
+    environment:
+      <<: *common-env
+      MPLCONFIGDIR: /tmp/matplotlib
+    volumes:
+      - ./data:/workspace/data
+      - ./artifacts:/workspace/artifacts
+      - ./notebooks:/workspace/notebooks
+      - ./logs:/workspace/logs
+      - ./models:/workspace/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  minio_data:
+  prometheus_data:

@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check (Assignment 03)
+        entry: python -m ruff check
+        language: system
+        pass_filenames: true
+        files: ^assignments/03-olist-late-delivery-mlops/.*\.py$
+      - id: ruff-format-check
+        name: ruff format check (Assignment 03)
+        entry: python -m ruff format --check
+        language: system
+        pass_filenames: true
+        files: ^assignments/03-olist-late-delivery-mlops/.*\.py$

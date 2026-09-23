@@ -1,0 +1,27 @@
+[app]
+name = "Qafza Olist Late Delivery Inference"
+version = "1.0.0"
+max_batch_size = 500
+log_level = "INFO"
+
+[model]
+registered_name = "olist_late_delivery"
+alias = "champion"
+
+[validation]
+allowed_states = [
+  "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO",
+  "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR",
+  "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO"
+]
+allowed_payment_types = ["boleto", "credit_card", "debit_card", "voucher", "not_defined"]
+
+[monitoring]
+baseline_predicted_late_rate = 0.09723
+prediction_rate_alert_abs_delta = 0.05
+latency_alert_ms = 500.0
+error_rate_alert = 0.05
+
+[paths]
+log_file = "logs/api.log"
+artifact_cache_dir = "/tmp/qafza-model-cache"
