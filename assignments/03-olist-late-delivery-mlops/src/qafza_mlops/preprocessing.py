@@ -20,9 +20,7 @@ def transform_with_fitted_preprocessor(
     if array.ndim != 2:
         raise RuntimeError("Fitted preprocessor returned a non-2D matrix")
     if array.shape[1] != len(expected_feature_names):
-        raise RuntimeError(
-            "Transformed feature width does not match saved feature contract"
-        )
+        raise RuntimeError("Transformed feature width does not match saved feature contract")
     if not np.isfinite(array).all():
         raise RuntimeError("Non-finite values remain after fitted preprocessing")
     return array

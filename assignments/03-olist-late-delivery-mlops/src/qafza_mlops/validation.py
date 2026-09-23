@@ -93,6 +93,4 @@ def validate_inference_frame(frame: pd.DataFrame, settings: Settings) -> None:
             failures.append(expectation.__class__.__name__)
 
     if failures:
-        raise DataValidationError(
-            "Great Expectations validation failed: " + ", ".join(failures)
-        )
+        raise DataValidationError("Great Expectations validation failed: " + ", ".join(failures))
