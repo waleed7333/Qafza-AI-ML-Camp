@@ -9,7 +9,19 @@ def test_great_expectations_accepts_valid_order(sample_order):
     validate_inference_frame(pd.DataFrame([sample_order]), load_settings())
 
 
+def test_great_expectations_accepts_imputable_optional_nulls(sample_order):
+    sample_order["mean_product_weight_g"] = None
+    sample_order["dominant_product_category"] = None
+    validate_inference_frame(pd.DataFrame([sample_order]), load_settings())
+
+
 def test_great_expectations_rejects_unknown_state(sample_order):
     sample_order["customer_state"] = "XX"
+    with pytest.raises(DataValidationError):
+        validate_inference_frame(pd.DataFrame([sample_order]), load_settings())
+
+
+def test_great_expectations_rejects_required_null(sample_order):
+    sample_order["customer_state"] = None
     with pytest.raises(DataValidationError):
         validate_inference_frame(pd.DataFrame([sample_order]), load_settings())

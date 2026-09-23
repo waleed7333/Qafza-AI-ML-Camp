@@ -175,7 +175,7 @@ On the first run, the `bootstrap` service:
 
 Only after bootstrap succeeds does the API start.
 
-Later starts are idempotent: if the configured `champion` alias already exists, bootstrap does not retrain unless `FORCE_BOOTSTRAP=1`.
+Later starts are idempotent: if the configured `champion` alias already exists, bootstrap does not retrain unless `FORCE_BOOTSTRAP=1`. If raw data is missing and `data/raw.dvc` exists, bootstrap first attempts `dvc pull data/raw.dvc`.
 
 ## Services
 
@@ -264,7 +264,7 @@ docker compose run --rm trainer \
 Validation occurs in two layers.
 
 1. Pydantic/FastAPI validates the request structure and primitive constraints.
-2. Great Expectations checks semantic ranges and allowed categories before inference.
+2. Great Expectations checks representative column types, required-value missingness, semantic ranges, and allowed categories before inference.
 
 Bad data is rejected rather than allowed to crash the model.
 
@@ -324,7 +324,7 @@ This versions:
 
 The generated `.dvc` pointer files should be committed to Git; the large data itself should not.
 
-For a true second-machine `dvc pull`, point the DVC remote to a durable S3-compatible endpoint reachable by both machines. The local MinIO volume proves the DVC workflow but is local to one Docker host.
+For a true second-machine `dvc pull`, point the DVC remote to a durable S3-compatible endpoint reachable by both machines. The local MinIO volume proves the DVC workflow but is local to one Docker host. Once `data/raw.dvc` is committed and the remote is reachable, the bootstrap service automatically tries to pull the raw snapshot when `data/raw/` is absent.
 
 ## MLflow
 
@@ -414,8 +414,10 @@ On Assignment 03 changes it:
 3. checks formatting;
 4. runs pytest;
 5. stops immediately if quality checks fail;
-6. builds the production Docker image;
-7. on pushes, publishes the image to GHCR with the Git commit SHA as the tag.
+6. validates `compose.yaml`;
+7. builds the production Docker image;
+8. builds the development/bootstrap image used for notebooks and DVC;
+9. on pushes, publishes the production image to GHCR with the Git commit SHA as the tag.
 
 Image format:
 
