@@ -19,11 +19,8 @@ from app.schemas import (
     PredictionResponse,
 )
 from src.qafza_mlops.config import load_settings
-from src.qafza_mlops.database import (
-    create_db_engine,
-    initialize_serving_schema,
-    store_prediction,
-)
+from src.qafza_mlops.data_access import PredictionLogRepository
+from src.qafza_mlops.database import create_db_engine
 from src.qafza_mlops.logging_config import configure_logging
 from src.qafza_mlops.model_loader import load_model_bundle
 from src.qafza_mlops.monitoring import LATENCY, MODEL_INFO, PREDICTIONS, REQUESTS
@@ -37,12 +34,13 @@ LOGGER = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     settings = load_settings()
     configure_logging(settings)
-    engine = create_db_engine(settings.database_url)
-    initialize_serving_schema(engine)
+
+    prediction_logs = PredictionLogRepository(create_db_engine(settings.database_url))
+    prediction_logs.initialize()
     bundle = load_model_bundle(settings)
 
     app.state.settings = settings
-    app.state.engine = engine
+    app.state.prediction_logs = prediction_logs
     app.state.bundle = bundle
     app.state.predictor = Predictor(bundle, settings)
 
@@ -54,7 +52,7 @@ async def lifespan(app: FastAPI):
         bundle.alias,
     )
     yield
-    engine.dispose()
+    prediction_logs.close()
 
 
 settings_for_metadata = load_settings()
@@ -92,8 +90,7 @@ def _predict_one(request: Request, order: OrderRequest, request_id: str):
     result = request.app.state.predictor.predict_frame(frame)[0]
     latency_ms = (time.perf_counter() - started) * 1000
 
-    store_prediction(
-        request.app.state.engine,
+    request.app.state.prediction_logs.record(
         request_id=request_id,
         payload=payload,
         prediction=result.prediction,

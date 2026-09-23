@@ -5,9 +5,8 @@ from __future__ import annotations
 
 import argparse
 
-from sqlalchemy import text
-
 from src.qafza_mlops.config import load_settings
+from src.qafza_mlops.data_access import PredictionLogRepository
 from src.qafza_mlops.database import create_db_engine
 
 
@@ -17,22 +16,12 @@ def main() -> int:
     parser.add_argument("actual_late", type=int, choices=[0, 1])
     args = parser.parse_args()
 
-    engine = create_db_engine(load_settings().database_url)
-    with engine.begin() as connection:
-        result = connection.execute(
-            text(
-                """
-                UPDATE serving.prediction_logs
-                SET actual_late = :actual_late, actual_recorded_at = now()
-                WHERE request_id = :request_id
-                """
-            ),
-            {
-                "request_id": args.request_id,
-                "actual_late": args.actual_late,
-            },
-        )
-    if result.rowcount != 1:
+    settings = load_settings()
+    repository = PredictionLogRepository(create_db_engine(settings.database_url))
+    updated = repository.record_outcome(args.request_id, args.actual_late)
+    repository.close()
+
+    if not updated:
         raise SystemExit(f"request_id not found or not unique: {args.request_id}")
     print("Outcome recorded.")
     return 0

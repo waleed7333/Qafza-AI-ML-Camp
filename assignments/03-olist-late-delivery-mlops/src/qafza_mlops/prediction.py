@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import numpy as np
 import pandas as pd
 
 from src.qafza_mlops.config import Settings
 from src.qafza_mlops.features import make_features
 from src.qafza_mlops.model_loader import ModelBundle
+from src.qafza_mlops.preprocessing import transform_with_fitted_preprocessor
 from src.qafza_mlops.validation import validate_inference_frame
 
 
@@ -29,12 +29,11 @@ class Predictor:
     def predict_frame(self, frame: pd.DataFrame) -> list[PredictionResult]:
         validate_inference_frame(frame, self.settings)
         raw_features = make_features(frame)
-        matrix = self.bundle.preprocessor.transform(raw_features)
-
-        if matrix.shape[1] != len(self.bundle.feature_names):
-            raise RuntimeError("Transformed feature width does not match saved feature contract")
-        if not np.isfinite(matrix).all():
-            raise RuntimeError("Non-finite values remain after fitted preprocessing")
+        matrix = transform_with_fitted_preprocessor(
+            self.bundle.preprocessor,
+            raw_features,
+            self.bundle.feature_names,
+        )
 
         probabilities = self.bundle.model.predict_proba(matrix)[:, 1]
         predictions = (probabilities >= self.bundle.threshold).astype(int)
