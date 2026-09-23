@@ -6,7 +6,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-
 ORDER_EXAMPLE = {
     "item_count": 1,
     "unique_product_count": 1,

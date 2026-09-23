@@ -11,7 +11,6 @@ from pathlib import Path
 import mlflow
 from mlflow import MlflowClient
 
-
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DATA_DIR = ROOT / "data" / "raw"
 RAW_DATA_POINTER = ROOT / "data" / "raw.dvc"
