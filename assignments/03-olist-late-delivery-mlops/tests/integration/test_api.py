@@ -10,6 +10,21 @@ class FakeEngine:
         pass
 
 
+class FakePredictionLogRepository:
+    def __init__(self, engine):
+        self.engine = engine
+        self.records = []
+
+    def initialize(self):
+        pass
+
+    def record(self, **kwargs):
+        self.records.append(kwargs)
+
+    def close(self):
+        self.engine.dispose()
+
+
 class FakePreprocessor:
     def transform(self, frame):
         return np.ones((len(frame), 2))
@@ -33,15 +48,22 @@ def fake_bundle():
     )
 
 
-def test_health_model_info_and_predict(monkeypatch, sample_order):
+def patch_runtime(monkeypatch):
     monkeypatch.setattr(main_module, "load_model_bundle", lambda settings: fake_bundle())
     monkeypatch.setattr(main_module, "create_db_engine", lambda url: FakeEngine())
-    monkeypatch.setattr(main_module, "initialize_serving_schema", lambda engine: None)
-    monkeypatch.setattr(main_module, "store_prediction", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        main_module,
+        "PredictionLogRepository",
+        FakePredictionLogRepository,
+    )
     monkeypatch.setattr(
         "src.qafza_mlops.prediction.validate_inference_frame",
         lambda frame, settings: None,
     )
+
+
+def test_health_model_info_and_predict(monkeypatch, sample_order):
+    patch_runtime(monkeypatch)
 
     with TestClient(main_module.app) as client:
         health = client.get("/health")
@@ -59,3 +81,18 @@ def test_health_model_info_and_predict(monkeypatch, sample_order):
         assert body["label"] == "late"
         assert body["probability"] == 0.8
         assert body["model_version"] == "99"
+
+
+def test_batch_prediction(monkeypatch, sample_order):
+    patch_runtime(monkeypatch)
+
+    with TestClient(main_module.app) as client:
+        response = client.post(
+            "/predict-batch",
+            json={"orders": [sample_order, sample_order]},
+        )
+
+    assert response.status_code == 200
+    predictions = response.json()["predictions"]
+    assert len(predictions) == 2
+    assert all(item["model_version"] == "99" for item in predictions)
