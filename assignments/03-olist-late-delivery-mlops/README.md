@@ -409,7 +409,7 @@ Drift is not evaluated until at least 100 recent predictions are available. This
 
 The initial alert policy is documented in `monitoring/ALERTS.md`.
 
-## CI/CD
+## CI
 
 The repository-root workflow is:
 
@@ -417,23 +417,34 @@ The repository-root workflow is:
 .github/workflows/assignment-03-ci-cd.yml
 ```
 
-On Assignment 03 changes it:
+The workflow is path-filtered to Assignment 03 and is organized for fast feedback:
 
-1. installs pinned runtime/development dependencies;
-2. runs Ruff linting;
-3. checks formatting;
-4. runs pytest;
-5. stops immediately if quality checks fail;
-6. validates `compose.yaml`;
-7. builds the production Docker image;
-8. builds the development/bootstrap image used for notebooks and DVC;
-9. on pushes to `main`, publishes the production image to GHCR with the Git commit SHA and `latest` tags. Development-branch pushes build and test the image but do not publish it.
+1. `quality` and `infrastructure` start independently and run in parallel;
+2. `quality` installs pinned dependencies, checks them with `pip check`, runs Ruff lint/format checks, and runs pytest;
+3. `infrastructure` validates Compose first, builds the pinned MinIO tool image early, verifies external PostgreSQL/Prometheus images, builds the development image, validates trainer/DVC behavior, and performs the PostgreSQL/MinIO/MLflow registry-artifact smoke test;
+4. `production-image` runs only after both jobs pass and verifies that the production FastAPI image builds successfully.
 
-Image format:
+The CI **never publishes a container image** and has no package-write permission.
 
-```text
-ghcr.io/waleed7333/qafza-assignment-03:<commit-sha>
+## Manual image release
+
+Publishing is intentionally a manual owner action rather than a CI/CD side effect. When a release is desired, first choose an explicit release tag, build locally from the reviewed `main` commit, then authenticate and push it yourself.
+
+Example build/tag flow:
+
+```bash
+docker build \
+  -t ghcr.io/waleed7333/qafza-assignment-03:<release-tag> \
+  assignments/03-olist-late-delivery-mlops
 ```
+
+After authenticating to GHCR outside the repository, publish only the tag you selected:
+
+```bash
+docker push ghcr.io/waleed7333/qafza-assignment-03:<release-tag>
+```
+
+Credentials or tokens must never be written into repository files, shell scripts, Compose files, or documentation examples.
 
 ## Pre-commit
 

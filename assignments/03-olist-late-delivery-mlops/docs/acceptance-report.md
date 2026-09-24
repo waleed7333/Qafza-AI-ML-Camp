@@ -144,7 +144,7 @@ The Docker job passed:
 - MLflow registry alias and artifact round trip;
 - production API image build.
 
-GHCR publication was correctly skipped on the development branch. Publication is enabled only for pushes to `main`.
+Container publication is intentionally outside CI. The workflow validates the production image build but never logs in to a registry or pushes an image. Releases are manual owner actions.
 
 ## Final integration gate
 
@@ -155,4 +155,4 @@ Before merging to `main`:
 3. the branch should contain no unexpected raw/generated files or secrets;
 4. the final diff against `main` should be limited to the intended repository documentation, Assignment 03 workflow, and Assignment 03 project files.
 
-After merge, the `main` CI should be verified and the GHCR image publication should succeed.
+After merge, the `main` CI should be verified. Any GHCR release is a separate manual owner action performed only after the reviewed `main` commit is selected for release.

@@ -1,4 +1,4 @@
-name: Assignment 03 CI/CD
+name: Assignment 03 CI
 
 on:
   push:
@@ -15,10 +15,10 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   quality:
+    name: Quality
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -52,42 +52,39 @@ jobs:
       - name: Run tests
         run: python -m pytest
 
-  docker:
+  infrastructure:
+    name: Infrastructure
     runs-on: ubuntu-latest
-    needs: quality
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
       - name: Validate Docker Compose
         working-directory: assignments/03-olist-late-delivery-mlops
         run: docker compose config > /dev/null
+
+      - name: Build pinned MinIO tool image
+        working-directory: assignments/03-olist-late-delivery-mlops
+        run: docker build -f Dockerfile.minio -t qafza-assignment-03-minio:local .
 
       - name: Verify external service images are pullable
         run: |
           docker pull postgres:16@sha256:4b7183ac05f8ef417db21fd72d71047a4238340c261d3cc3ddb6d579ab5071ae
           docker pull prom/prometheus:v2.55.1
 
-      - name: Build pinned MinIO tool image
-        working-directory: assignments/03-olist-late-delivery-mlops
-        run: docker build -f Dockerfile.minio -t qafza-assignment-03-minio:local .
-
       - name: Build bootstrap development image
         working-directory: assignments/03-olist-late-delivery-mlops
         run: docker build -f Dockerfile.dev -t qafza-assignment-03-dev:ci .
 
-      - name: Verify trainer direct-script imports and DVC container mode
+      - name: Verify trainer imports and DVC container mode
         working-directory: assignments/03-olist-late-delivery-mlops
         run: |
           docker compose run --rm --no-deps trainer python scripts/predict_cli.py --help
           docker compose run --rm --no-deps trainer python scripts/record_outcome.py --help
           docker compose run --rm --no-deps trainer sh -lc 'dvc config core.no_scm true --local && dvc root'
 
-      - name: Smoke test Compose infrastructure and MLflow network access
+      - name: Smoke test PostgreSQL, MinIO, and MLflow
         working-directory: assignments/03-olist-late-delivery-mlops
         run: |
           set -euo pipefail
@@ -102,7 +99,7 @@ jobs:
           }
           trap cleanup EXIT
 
-          docker compose up -d --build postgres minio minio-init mlflow
+          docker compose up -d postgres minio minio-init mlflow
 
           for attempt in $(seq 1 60); do
             if docker compose exec -T mlflow python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=2)" >/dev/null 2>&1; then
@@ -150,20 +147,24 @@ jobs:
           print(f"MLflow smoke OK: run={run.info.run_id} version={version}")
           PY
 
-      - name: Log in to GHCR
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+  production-image:
+    name: Production image build
+    runs-on: ubuntu-latest
+    needs:
+      - quality
+      - infrastructure
 
-      - name: Build and optionally push API image
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build production API image
         uses: docker/build-push-action@v7
         with:
           context: assignments/03-olist-late-delivery-mlops
           file: assignments/03-olist-late-delivery-mlops/Dockerfile
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          tags: |
-            ghcr.io/waleed7333/qafza-assignment-03:${{ github.sha }}
-            ghcr.io/waleed7333/qafza-assignment-03:latest
+          push: false
+          tags: qafza-assignment-03:ci
