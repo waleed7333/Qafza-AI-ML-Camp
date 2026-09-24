@@ -6,17 +6,17 @@ COMPOSE = (ROOT / "compose.yaml").read_text(encoding="utf-8")
 
 def test_minio_init_uses_container_environment_variables():
     required = [
-        '"$$MINIO_ROOT_USER"',
-        '"$$MINIO_ROOT_PASSWORD"',
-        '"local/$$MLFLOW_ARTIFACT_BUCKET"',
-        '"local/$$DVC_BUCKET"',
+        '"$MINIO_ROOT_USER"',
+        '"$MINIO_ROOT_PASSWORD"',
+        '"local/$MLFLOW_ARTIFACT_BUCKET"',
+        '"local/$DVC_BUCKET"',
     ]
     for token in required:
         assert token in COMPOSE
 
 
 def test_minio_init_waits_for_minio_health():
-    assert 'test: ["CMD", "mc", "ready", "local"]' in COMPOSE
+    assert '"http://localhost:9000/minio/health/live"' in COMPOSE
     minio_init = COMPOSE.split("  minio-init:", 1)[1].split("\n\n  mlflow:", 1)[0]
     assert "condition: service_healthy" in minio_init
 
@@ -37,13 +37,9 @@ def test_makefile_uses_local_no_scm_for_containerized_dvc():
     assert "dvc config core.no_scm true --local" in makefile
     assert "dvc-status:" in makefile
 
-
-def test_minio_images_are_pinned_to_official_docker_hub_digests():
-    assert (
-        "minio/minio:RELEASE.2025-09-07T16-13-09Z@sha256:"
-        "14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
-    ) in COMPOSE
-    assert (
-        "minio/mc:RELEASE.2025-08-13T08-35-41Z@sha256:"
-        "a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727"
-    ) in COMPOSE
+def test_minio_services_use_project_built_tool_image():
+    minio = COMPOSE.split("  minio:", 1)[1].split("\n\n  minio-init:", 1)[0]
+    minio_init = COMPOSE.split("  minio-init:", 1)[1].split("\n\n  mlflow:", 1)[0]
+    for service in [minio, minio_init]:
+        assert "dockerfile: Dockerfile.minio" in service
+        assert "image: qafza-assignment-03-minio:local" in service

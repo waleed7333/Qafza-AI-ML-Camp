@@ -118,6 +118,10 @@ The configured `minio` remote points to the MinIO service on the local Docker Co
 
 A true second-machine `dvc pull` requires an S3-compatible endpoint reachable by both machines plus credentials supplied outside Git. This limitation is documented rather than presented as completed evidence.
 
+## Container-source resilience
+
+MinIO server/client releases are pinned in `Dockerfile.minio` and downloaded from the official MinIO release archive with SHA256 verification during the image build. This avoids depending on the continued anonymous availability of historical MinIO images in third-party container registries.
+
 ## CI evidence
 
 The acceptance-baseline push triggered Assignment 03 CI/CD run `35998922506`, which completed successfully.

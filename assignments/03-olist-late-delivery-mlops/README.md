@@ -55,7 +55,7 @@ FastAPI inference service
         +--> Prometheus metrics
 ```
 
-Artifact storage is provided by MinIO. The local stack is orchestrated by Docker Compose.
+Artifact storage is provided by MinIO. Because upstream MinIO container registries are not relied on for reproducibility, `Dockerfile.minio` builds the pinned MinIO server/client binaries directly from the official release archive and verifies their published SHA256 files. The local stack is orchestrated by Docker Compose.
 
 ## Repository structure
 
@@ -81,6 +81,7 @@ Artifact storage is provided by MinIO. The local stack is orchestrated by Docker
 ├── compose.yaml
 ├── Dockerfile
 ├── Dockerfile.dev
+├── Dockerfile.minio
 ├── Makefile
 └── pyproject.toml
 ```
