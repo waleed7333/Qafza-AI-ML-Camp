@@ -159,15 +159,16 @@ jobs:
           SHA_TAG: ${{ steps.release.outputs.sha_tag }}
           DIGEST: ${{ steps.build.outputs.digest }}
         run: |
+          set -euo pipefail
           {
             echo "## Assignment 03 container release"
             echo
-            echo "- Version: `$VERSION`"
-            echo "- Commit tag: `$SHA_TAG`"
-            echo "- Latest tag: `latest`"
-            echo "- Image: `$IMAGE`"
-            echo "- Digest: `$DIGEST`"
-            echo "- Source commit: `$GITHUB_SHA`"
+            printf -- '- Version: `%s`\n' "$VERSION"
+            printf -- '- Commit tag: `%s`\n' "$SHA_TAG"
+            printf -- '- Latest tag: `latest`\n'
+            printf -- '- Image: `%s`\n' "$IMAGE"
+            printf -- '- Digest: `%s`\n' "$DIGEST"
+            printf -- '- Source commit: `%s`\n' "$GITHUB_SHA"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Log out of GitHub Container Registry

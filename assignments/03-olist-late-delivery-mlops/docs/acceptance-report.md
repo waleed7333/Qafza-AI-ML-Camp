@@ -152,6 +152,34 @@ The Docker job passed:
 
 Normal CI validates the production image build but never logs in to a registry or pushes an image. Container publication is handled by the separate `workflow_dispatch`-only Assignment 03 Manual Release workflow, so a registry push occurs only after an explicit owner action. The release workflow uses the repository `GITHUB_TOKEN`, immutable version/commit tags, OCI labels, provenance, SBOM generation, remote-tag verification, and a recorded digest.
 
+## Manual container release evidence
+
+The first owner-approved container release was published by **Assignment 03 Manual Release** run `36028129056` from source commit:
+
+```text
+0bb9017d9e67101b3cf2e34bd12a3e237dbf6da9
+```
+
+Release validation passed dependency checks, Ruff lint/format checks, pytest, and Docker Compose validation before publication.
+
+The publish job then authenticated with the repository `GITHUB_TOKEN`, protected immutable tags, built the production image with OCI metadata, generated BuildKit provenance and an SBOM, pushed the image, and verified all remote tags.
+
+Published references:
+
+```text
+ghcr.io/waleed7333/qafza-assignment-03:v1.0.0
+ghcr.io/waleed7333/qafza-assignment-03:sha-0bb9017d9e67
+ghcr.io/waleed7333/qafza-assignment-03:latest
+```
+
+All three references resolved to the published manifest-list digest:
+
+```text
+sha256:60633be158ee9ee36c179d609ff5b2d74e0eb04174f306169c55be2fdec74ffb
+```
+
+The first release exposed a quoting defect only in the optional GitHub job-summary rendering: shell command substitution was triggered by Markdown backticks. It did **not** affect validation, image build, push, tag verification, SBOM/provenance generation, or the published digest. The release workflow was subsequently hardened to render Markdown values with literal-safe `printf` formatting.
+
 ## Final integration result
 
 The integration gate was completed:
