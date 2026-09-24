@@ -10,7 +10,7 @@ def transform_with_fitted_preprocessor(
     preprocessor: object,
     features: pd.DataFrame,
     expected_feature_names: list[str],
-) -> np.ndarray:
+) -> pd.DataFrame:
     """Transform features and enforce the saved transformed-feature contract."""
     matrix = preprocessor.transform(features)
     if hasattr(matrix, "toarray"):
@@ -23,4 +23,9 @@ def transform_with_fitted_preprocessor(
         raise RuntimeError("Transformed feature width does not match saved feature contract")
     if not np.isfinite(array).all():
         raise RuntimeError("Non-finite values remain after fitted preprocessing")
-    return array
+
+    return pd.DataFrame(
+        array,
+        columns=expected_feature_names,
+        index=features.index,
+    )

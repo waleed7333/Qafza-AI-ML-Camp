@@ -21,6 +21,8 @@ def test_transform_accepts_expected_finite_width():
         ["a", "b"],
     )
     assert result.shape == (1, 2)
+    assert list(result.columns) == ["a", "b"]
+    assert result.index.equals(features.index)
 
 
 def test_transform_rejects_wrong_width():

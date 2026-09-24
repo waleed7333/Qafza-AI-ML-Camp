@@ -19,7 +19,12 @@ def main() -> int:
 
     local_preprocessor = joblib.load(root / "artifacts/05_features/preprocessor.joblib")
     local_model = joblib.load(root / "artifacts/06_model/model.joblib")
-    local_matrix = local_preprocessor.transform(make_features(source))
+    local_features = make_features(source)
+    local_matrix = pd.DataFrame(
+        local_preprocessor.transform(local_features),
+        columns=local_preprocessor.get_feature_names_out(),
+        index=local_features.index,
+    )
     expected = float(local_model.predict_proba(local_matrix)[:, 1][0])
 
     bundle = load_model_bundle(load_settings())
