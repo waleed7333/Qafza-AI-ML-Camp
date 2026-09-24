@@ -19,3 +19,8 @@ def test_minio_init_waits_for_minio_health():
     assert 'test: ["CMD", "mc", "ready", "local"]' in COMPOSE
     minio_init = COMPOSE.split("  minio-init:", 1)[1].split("\n\n  mlflow:", 1)[0]
     assert "condition: service_healthy" in minio_init
+
+
+def test_trainer_exposes_project_root_on_pythonpath():
+    trainer = COMPOSE.split("  trainer:", 1)[1].split("\n\nvolumes:", 1)[0]
+    assert "PYTHONPATH: /workspace" in trainer

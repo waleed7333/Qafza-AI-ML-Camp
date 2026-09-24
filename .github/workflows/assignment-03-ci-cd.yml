@@ -78,6 +78,12 @@ jobs:
         working-directory: assignments/03-olist-late-delivery-mlops
         run: docker build -f Dockerfile.dev -t qafza-assignment-03-dev:ci .
 
+      - name: Verify trainer direct-script imports
+        working-directory: assignments/03-olist-late-delivery-mlops
+        run: |
+          docker compose run --rm --no-deps trainer python scripts/predict_cli.py --help
+          docker compose run --rm --no-deps trainer python scripts/record_outcome.py --help
+
       - name: Smoke test Compose infrastructure and MLflow network access
         working-directory: assignments/03-olist-late-delivery-mlops
         run: |

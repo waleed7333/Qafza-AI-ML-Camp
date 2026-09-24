@@ -417,7 +417,7 @@ On Assignment 03 changes it:
 6. validates `compose.yaml`;
 7. builds the production Docker image;
 8. builds the development/bootstrap image used for notebooks and DVC;
-9. on pushes, publishes the production image to GHCR with the Git commit SHA as the tag.
+9. on pushes to `main`, publishes the production image to GHCR with the Git commit SHA and `latest` tags. Development-branch pushes build and test the image but do not publish it.
 
 Image format:
 

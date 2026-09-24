@@ -175,6 +175,7 @@ services:
     working_dir: /workspace
     environment:
       <<: *common-env
+      PYTHONPATH: /workspace
       MPLCONFIGDIR: /tmp/matplotlib
     volumes:
       - .:/workspace
