@@ -1,6 +1,6 @@
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
 WORKFLOW = (ROOT / ".github" / "workflows" / "assignment-03-ci-cd.yml").read_text(encoding="utf-8")
 
 
