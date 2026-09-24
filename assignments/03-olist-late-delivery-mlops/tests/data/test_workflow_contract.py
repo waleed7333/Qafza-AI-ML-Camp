@@ -67,6 +67,6 @@ def test_release_workflow_publishes_with_supply_chain_metadata():
 
 
 def test_release_summary_uses_literal_markdown_without_shell_substitution():
-    assert "printf -- '- Version: \`%s\`\\n'" in RELEASE_WORKFLOW
-    assert 'echo "- Version: \`$VERSION\`"' not in RELEASE_WORKFLOW
-    assert 'echo "- Digest: \`$DIGEST\`"' not in RELEASE_WORKFLOW
+    assert "printf -- '- Version: `%s`\\n'" in RELEASE_WORKFLOW
+    assert 'echo "- Version: `$VERSION`"' not in RELEASE_WORKFLOW
+    assert 'echo "- Digest: `$DIGEST`"' not in RELEASE_WORKFLOW
