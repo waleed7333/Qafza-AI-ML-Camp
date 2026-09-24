@@ -18,6 +18,7 @@ allowed_payment_types = ["boleto", "credit_card", "debit_card", "voucher", "not_
 
 [monitoring]
 baseline_predicted_late_rate = 0.09723
+prediction_drift_min_samples = 100
 prediction_rate_alert_abs_delta = 0.05
 latency_alert_ms = 500.0
 error_rate_alert = 0.05

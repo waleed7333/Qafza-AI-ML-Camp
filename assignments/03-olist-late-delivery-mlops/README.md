@@ -1,6 +1,10 @@
 # Assignment 03 — From Notebooks to Production
 
+**Status: ✅ Completed**
+
 Self-contained MLOps inference system for the Olist late-delivery classifier.
+
+The verified local acceptance evidence is recorded in [`docs/acceptance-report.md`](docs/acceptance-report.md).
 
 This assignment intentionally lives in the same Qafza repository as Assignments 01 and 02, but it does **not** depend on either one at runtime. It owns its own raw-data directory, PostgreSQL service, training notebooks, fitted artifacts, MLflow registry, API, tests, containers, CI/CD workflow, logging, and monitoring.
 
@@ -400,6 +404,8 @@ Recent prediction-distribution drift can be checked with:
 make drift
 ```
 
+Drift is not evaluated until at least 100 recent predictions are available. This avoids treating a tiny demonstration sample as operational evidence of distribution shift. After the minimum sample count is reached, the configured absolute deviation threshold is applied.
+
 The initial alert policy is documented in `monitoring/ALERTS.md`.
 
 ## CI/CD
@@ -451,9 +457,13 @@ FastAPI/Pydantic returns HTTP 422.
 
 A deliberately failing pytest test returns a non-zero exit code, and the GitHub Actions quality job stops before Docker publication.
 
+## Acceptance evidence
+
+The completed local acceptance run, observed results, CI evidence, and known DVC portability boundary are recorded in [`docs/acceptance-report.md`](docs/acceptance-report.md).
+
 ## Clean-machine acceptance
 
-The final acceptance sequence is:
+The reproducibility sequence is:
 
 1. clone the repository;
 2. switch to the intended Task 3 commit/branch;

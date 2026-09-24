@@ -7,7 +7,7 @@ Initial alert policy:
 - **Availability:** alert when the API health check fails for more than 2 consecutive checks.
 - **Latency:** investigate when p95 prediction latency stays above 500 ms.
 - **Errors:** investigate when the request error rate exceeds 5% over a 5-minute window. Schema/semantic 422 rejections are exposed separately as `status="invalid"`; unexpected serving failures use `status="error"`.
-- **Prediction drift:** investigate when the recent predicted-late share differs from the validation reference (0.09723) by more than 0.05 absolute.
+- **Prediction drift:** evaluate only after at least 100 predictions exist in the 24-hour window; then investigate when the recent predicted-late share differs from the validation reference (0.09723) by more than 0.05 absolute. Small demonstration samples are reported as insufficient rather than treated as drift.
 - **Model loading:** page immediately if the configured MLflow model alias cannot be resolved at service startup.
 
 These are operational starting thresholds, not claims that they are universally optimal. They are intentionally kept in configuration and documentation so they can be changed without changing inference logic.

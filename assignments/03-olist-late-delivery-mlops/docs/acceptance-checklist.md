@@ -1,6 +1,8 @@
 # Assignment 03 local acceptance checklist
 
-Do not merge `assignment-03` into `main` until this checklist is completed on the target machine.
+The completed acceptance evidence is recorded in [`acceptance-report.md`](acceptance-report.md).
+
+Do not merge `assignment-03` into `main` until this checklist is completed on the target machine and the final branch CI is green.
 
 ## Prepare
 
@@ -50,6 +52,8 @@ Run:
 make parity
 make drift
 ```
+
+`make drift` should report insufficient samples and exit successfully until the configured minimum sample count is reached; only sufficiently sized windows can trigger the drift-alert exit code.
 
 Inspect:
 
