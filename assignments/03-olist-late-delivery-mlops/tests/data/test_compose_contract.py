@@ -36,3 +36,14 @@ def test_makefile_uses_local_no_scm_for_containerized_dvc():
     makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
     assert "dvc config core.no_scm true --local" in makefile
     assert "dvc-status:" in makefile
+
+
+def test_minio_images_are_pinned_to_official_docker_hub_digests():
+    assert (
+        "minio/minio:RELEASE.2025-09-07T16-13-09Z@sha256:"
+        "14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
+    ) in COMPOSE
+    assert (
+        "minio/mc:RELEASE.2025-08-13T08-35-41Z@sha256:"
+        "a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727"
+    ) in COMPOSE
