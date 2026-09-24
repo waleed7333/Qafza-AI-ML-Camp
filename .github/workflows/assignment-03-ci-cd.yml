@@ -8,10 +8,12 @@ on:
     paths:
       - "assignments/03-olist-late-delivery-mlops/**"
       - ".github/workflows/assignment-03-ci-cd.yml"
+      - ".github/workflows/assignment-03-release.yml"
   pull_request:
     paths:
       - "assignments/03-olist-late-delivery-mlops/**"
       - ".github/workflows/assignment-03-ci-cd.yml"
+      - ".github/workflows/assignment-03-release.yml"
 
 permissions:
   contents: read

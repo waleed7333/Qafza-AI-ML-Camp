@@ -1,0 +1,175 @@
+name: Assignment 03 Manual Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: assignment-03-manual-release
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Release validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: assignments/03-olist-late-delivery-mlops
+
+    steps:
+      - name: Require main branch
+        working-directory: .
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF_NAME" != "main" ]; then
+            echo "::error::Assignment 03 releases must be started from the main branch."
+            exit 1
+          fi
+
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            assignments/03-olist-late-delivery-mlops/requirements/runtime.txt
+            assignments/03-olist-late-delivery-mlops/requirements/dev.txt
+
+      - name: Install pinned validation dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements/runtime.txt -r requirements/dev.txt
+          python -m pip check
+
+      - name: Lint
+        run: python -m ruff check app src scripts tests
+
+      - name: Check formatting
+        run: python -m ruff format --check app src scripts tests
+
+      - name: Run tests
+        run: python -m pytest
+
+      - name: Validate Docker Compose
+        run: docker compose config > /dev/null
+
+  publish:
+    name: Publish production image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: validate
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Calculate immutable release metadata
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          patch=$((GITHUB_RUN_NUMBER - 1))
+          version="v1.0.${patch}"
+          short_sha="${GITHUB_SHA::12}"
+          sha_tag="sha-${short_sha}"
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/qafza-assignment-03"
+
+          {
+            echo "version=${version}"
+            echo "sha_tag=${sha_tag}"
+            echo "image=${image}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Release version: ${version}"
+          echo "Commit tag: ${sha_tag}"
+          echo "Image: ${image}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Protect immutable release tags
+        env:
+          IMAGE: ${{ steps.release.outputs.image }}
+          VERSION: ${{ steps.release.outputs.version }}
+          SHA_TAG: ${{ steps.release.outputs.sha_tag }}
+        run: |
+          set -euo pipefail
+
+          for tag in "$VERSION" "$SHA_TAG"; do
+            if docker buildx imagetools inspect "$IMAGE:$tag" >/dev/null 2>&1; then
+              echo "::error::Refusing to overwrite existing immutable tag $IMAGE:$tag"
+              exit 1
+            fi
+          done
+
+      - name: Build and publish production image
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: assignments/03-olist-late-delivery-mlops
+          file: assignments/03-olist-late-delivery-mlops/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.release.outputs.image }}:${{ steps.release.outputs.version }}
+            ${{ steps.release.outputs.image }}:${{ steps.release.outputs.sha_tag }}
+            ${{ steps.release.outputs.image }}:latest
+          labels: |
+            org.opencontainers.image.title=Qafza Assignment 03 API
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.release.outputs.version }}
+          cache-from: type=gha,scope=assignment-03-release
+          cache-to: type=gha,mode=max,scope=assignment-03-release
+          provenance: mode=max
+          sbom: true
+
+      - name: Verify published image
+        env:
+          IMAGE: ${{ steps.release.outputs.image }}
+          VERSION: ${{ steps.release.outputs.version }}
+          SHA_TAG: ${{ steps.release.outputs.sha_tag }}
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect "$IMAGE:$VERSION" >/dev/null
+          docker buildx imagetools inspect "$IMAGE:$SHA_TAG" >/dev/null
+          docker buildx imagetools inspect "$IMAGE:latest" >/dev/null
+
+      - name: Write release summary
+        env:
+          IMAGE: ${{ steps.release.outputs.image }}
+          VERSION: ${{ steps.release.outputs.version }}
+          SHA_TAG: ${{ steps.release.outputs.sha_tag }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          {
+            echo "## Assignment 03 container release"
+            echo
+            echo "- Version: `$VERSION`"
+            echo "- Commit tag: `$SHA_TAG`"
+            echo "- Latest tag: `latest`"
+            echo "- Image: `$IMAGE`"
+            echo "- Digest: `$DIGEST`"
+            echo "- Source commit: `$GITHUB_SHA`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Log out of GitHub Container Registry
+        if: always()
+        run: docker logout ghcr.io || true

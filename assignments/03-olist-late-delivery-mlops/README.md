@@ -431,23 +431,31 @@ The CI **never publishes a container image** and has no package-write permission
 
 ## Manual image release
 
-Publishing is intentionally a manual owner action rather than a CI/CD side effect. When a release is desired, first choose an explicit release tag, build locally from the reviewed `main` commit, then authenticate and push it yourself.
+Container publication is automated by a **separate manual release workflow**:
 
-Example build/tag flow:
-
-```bash
-docker build \
-  -t ghcr.io/waleed7333/qafza-assignment-03:<release-tag> \
-  assignments/03-olist-late-delivery-mlops
+```text
+.github/workflows/assignment-03-release.yml
 ```
 
-After authenticating to GHCR outside the repository, publish only the tag you selected:
+Normal CI never publishes images. A release occurs only when the repository owner explicitly starts **Assignment 03 Manual Release** from GitHub Actions on the `main` branch.
 
-```bash
-docker push ghcr.io/waleed7333/qafza-assignment-03:<release-tag>
-```
+No local Docker commands, personal access token, or version input are required. The workflow:
 
-Credentials or tokens must never be written into repository files, shell scripts, Compose files, or documentation examples.
+1. refuses to release from any branch other than `main`;
+2. reruns dependency checks, Ruff lint/format checks, pytest, and Docker Compose validation;
+3. calculates the release version automatically (`v1.0.0`, `v1.0.1`, ... from the manual release workflow run number);
+4. authenticates to GHCR with the short-lived repository `GITHUB_TOKEN`;
+5. refuses to overwrite an existing immutable version or commit tag;
+6. builds the production Dockerfile and publishes:
+   - `ghcr.io/waleed7333/qafza-assignment-03:v1.0.x`;
+   - `ghcr.io/waleed7333/qafza-assignment-03:sha-<commit>`;
+   - `ghcr.io/waleed7333/qafza-assignment-03:latest`;
+7. attaches OCI source/revision/version labels, BuildKit provenance, and an SBOM;
+8. verifies all three remote tags and records the final image digest in the GitHub Actions job summary.
+
+To release, open **GitHub → Actions → Assignment 03 Manual Release**, select `main`, and press **Run workflow**. This explicit dispatch is the release approval; publication never happens merely because code was pushed.
+
+The immutable `v1.0.x` and `sha-...` tags provide reproducible references. The `latest` tag is intentionally mutable and points to the most recent manually approved release.
 
 ## Pre-commit
 

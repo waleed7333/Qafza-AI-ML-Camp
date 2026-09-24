@@ -150,7 +150,7 @@ The Docker job passed:
 - MLflow registry alias and artifact round trip;
 - production API image build.
 
-Container publication is intentionally outside CI. The workflow validates the production image build but never logs in to a registry or pushes an image. Releases are manual owner actions.
+Normal CI validates the production image build but never logs in to a registry or pushes an image. Container publication is handled by the separate `workflow_dispatch`-only Assignment 03 Manual Release workflow, so a registry push occurs only after an explicit owner action. The release workflow uses the repository `GITHUB_TOKEN`, immutable version/commit tags, OCI labels, provenance, SBOM generation, remote-tag verification, and a recorded digest.
 
 ## Final integration result
 
@@ -163,4 +163,4 @@ The integration gate was completed:
 - `main` was fast-forwarded to the accepted runtime commit;
 - `main` CI run `36020844977` passed all quality, infrastructure, MLflow artifact/registry, and production-image build checks.
 
-Any GHCR release remains a separate manual owner action. CI has no registry-login step, no package-write permission, and no image-push step.
+Any GHCR release remains a separate manual owner action through the dedicated release workflow. Normal CI has no registry-login step, no package-write permission, and no image-push step; only the manually dispatched release job receives `packages: write`.

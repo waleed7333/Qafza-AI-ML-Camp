@@ -2,6 +2,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 WORKFLOW = (ROOT / ".github" / "workflows" / "assignment-03-ci-cd.yml").read_text(encoding="utf-8")
+RELEASE_WORKFLOW = (ROOT / ".github" / "workflows" / "assignment-03-release.yml").read_text(
+    encoding="utf-8"
+)
 
 
 def test_quality_and_infrastructure_are_independent_parallel_jobs():
@@ -34,3 +37,30 @@ def test_ci_never_publishes_container_images():
     assert "docker/login-action" not in WORKFLOW
     assert "push: true" not in WORKFLOW
     assert "push: false" in WORKFLOW
+
+
+def test_release_workflow_is_manual_only():
+    trigger_section = RELEASE_WORKFLOW.split("permissions:", 1)[0]
+    assert "workflow_dispatch:" in trigger_section
+    assert "\n  push:" not in trigger_section
+    assert "\n  pull_request:" not in trigger_section
+
+
+def test_release_workflow_requires_main_and_separates_validation_from_publish():
+    assert 'GITHUB_REF_NAME" != "main"' in RELEASE_WORKFLOW
+    assert "needs: validate" in RELEASE_WORKFLOW
+    assert "packages: write" in RELEASE_WORKFLOW
+
+
+def test_release_workflow_uses_github_token_and_immutable_traceability_tags():
+    assert "docker/login-action@v3" in RELEASE_WORKFLOW
+    assert "secrets.GITHUB_TOKEN" in RELEASE_WORKFLOW
+    assert "Refusing to overwrite existing immutable tag" in RELEASE_WORKFLOW
+    assert 'sha_tag="sha-' in RELEASE_WORKFLOW
+
+
+def test_release_workflow_publishes_with_supply_chain_metadata():
+    assert "push: true" in RELEASE_WORKFLOW
+    assert "provenance: mode=max" in RELEASE_WORKFLOW
+    assert "sbom: true" in RELEASE_WORKFLOW
+    assert "steps.build.outputs.digest" in RELEASE_WORKFLOW
