@@ -37,7 +37,11 @@ def registered_model_exists() -> bool:
         filter_string=f"name='{registered_name}'",
         max_results=1,
     )
-    return bool(models) and alias in models[0].aliases
+    if not models:
+        return False
+
+    registered_model = client.get_registered_model(registered_name)
+    return alias in registered_model.aliases
 
 
 def raw_data_present() -> bool:

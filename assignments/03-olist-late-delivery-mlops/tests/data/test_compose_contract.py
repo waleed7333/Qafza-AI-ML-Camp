@@ -1,0 +1,21 @@
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+COMPOSE = (ROOT / "compose.yaml").read_text(encoding="utf-8")
+
+
+def test_minio_init_uses_container_environment_variables():
+    required = [
+        '"$$MINIO_ROOT_USER"',
+        '"$$MINIO_ROOT_PASSWORD"',
+        '"local/$$MLFLOW_ARTIFACT_BUCKET"',
+        '"local/$$DVC_BUCKET"',
+    ]
+    for token in required:
+        assert token in COMPOSE
+
+
+def test_minio_init_waits_for_minio_health():
+    assert 'test: ["CMD", "mc", "ready", "local"]' in COMPOSE
+    minio_init = COMPOSE.split("  minio-init:", 1)[1].split("\n\n  mlflow:", 1)[0]
+    assert "condition: service_healthy" in minio_init
