@@ -22,7 +22,7 @@ def main() -> int:
     repository.close()
 
     if not updated:
-        raise SystemExit(f"request_id not found or not unique: {args.request_id}")
+        raise SystemExit(f"request_id not found: {args.request_id}")
     print("Outcome recorded.")
     return 0
 

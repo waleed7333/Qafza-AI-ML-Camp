@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS serving.prediction_logs (
     actual_recorded_at timestamptz
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS prediction_logs_request_id_uidx
+    ON serving.prediction_logs (request_id);
+
 CREATE INDEX IF NOT EXISTS prediction_logs_created_at_idx
     ON serving.prediction_logs (created_at);
 """

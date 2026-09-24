@@ -1,6 +1,6 @@
 """Deterministic purchase-time feature construction.
 
-This is the production equivalent of Assignment 02 Notebook 05. It intentionally
+This is the production equivalent of this assignment's Notebook 05. It intentionally
 contains no fit operation. The fitted sklearn preprocessor is loaded separately.
 """
 

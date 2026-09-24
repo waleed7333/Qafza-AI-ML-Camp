@@ -462,8 +462,9 @@ The final acceptance sequence is:
 5. run `docker compose up --build`;
 6. verify `/health`, `/model-info`, `/predict`, and `/predict-batch`;
 7. run `make parity`;
-8. demonstrate rejection of bad input;
-9. demonstrate that a failing automated test blocks CI.
+8. demonstrate rejection of bad input and confirm invalid requests are observable in metrics;
+9. run `make dvc-status` after the local DVC snapshot is pushed;
+10. demonstrate that a failing automated test blocks CI.
 
 ## Important boundary
 

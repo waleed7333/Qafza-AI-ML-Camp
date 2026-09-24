@@ -9,6 +9,8 @@ from uuid import uuid4
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from prometheus_client import make_asgi_app
 
 from app.schemas import (
@@ -62,6 +64,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.mount("/metrics", make_asgi_app())
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    route = request.url.path
+    if route in {"/predict", "/predict-batch"}:
+        REQUESTS.labels(route=route, status="invalid").inc()
+        LOGGER.warning("request_validation_failed route=%s errors=%s", route, exc.errors())
+    return await request_validation_exception_handler(request, exc)
 
 
 @app.get("/health")

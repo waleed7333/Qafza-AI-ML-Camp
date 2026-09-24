@@ -73,9 +73,14 @@ After successful bootstrap:
 ```bash
 make dvc-track
 make dvc-push
+make dvc-status
 ```
 
-Review the generated `data/raw.dvc`, `artifacts.dvc`, and `.gitignore` changes before committing them.
+The containerized DVC commands use the Git-ignored local setting `core.no_scm=true`
+because the trainer mount does not include the repository's parent `.git` directory.
+Review the generated `data/raw.dvc` and `artifacts.dvc` pointers before committing;
+raw CSVs, generated artifacts, `.dvc/config.local`, `.env`, caches, and runtime logs
+must remain ignored. `make dvc-status` should report the cache and remote in sync.
 
 A local MinIO DVC remote is not sufficient for a different physical machine. For clean-machine recovery, configure a durable S3-compatible remote reachable by both machines and then verify `dvc pull`.
 
