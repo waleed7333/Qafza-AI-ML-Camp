@@ -6,10 +6,10 @@ COMPOSE = (ROOT / "compose.yaml").read_text(encoding="utf-8")
 
 def test_minio_init_uses_container_environment_variables():
     required = [
-        '"$MINIO_ROOT_USER"',
-        '"$MINIO_ROOT_PASSWORD"',
-        '"local/$MLFLOW_ARTIFACT_BUCKET"',
-        '"local/$DVC_BUCKET"',
+        '"$$MINIO_ROOT_USER"',
+        '"$$MINIO_ROOT_PASSWORD"',
+        '"local/$$MLFLOW_ARTIFACT_BUCKET"',
+        '"local/$$DVC_BUCKET"',
     ]
     for token in required:
         assert token in COMPOSE
@@ -36,6 +36,7 @@ def test_makefile_uses_local_no_scm_for_containerized_dvc():
     makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
     assert "dvc config core.no_scm true --local" in makefile
     assert "dvc-status:" in makefile
+
 
 def test_minio_services_use_project_built_tool_image():
     minio = COMPOSE.split("  minio:", 1)[1].split("\n\n  minio-init:", 1)[0]
