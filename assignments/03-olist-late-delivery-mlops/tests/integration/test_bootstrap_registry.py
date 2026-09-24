@@ -36,3 +36,19 @@ def test_registered_model_exists_requires_champion_alias(monkeypatch):
 
     FakeClient.aliases = {"champion": "2"}
     assert bootstrap.registered_model_exists() is True
+
+
+def test_run_dvc_enables_local_no_scm_before_command(monkeypatch):
+    calls = []
+
+    def fake_run(command, *, cwd, check):
+        calls.append((command, cwd, check))
+
+    monkeypatch.setattr(bootstrap.subprocess, "run", fake_run)
+
+    bootstrap.run_dvc("pull", "data/raw.dvc")
+
+    assert calls[0][0] == ["dvc", "config", "core.no_scm", "true", "--local"]
+    assert calls[1][0] == ["dvc", "pull", "data/raw.dvc"]
+    assert all(call[1] == bootstrap.ROOT for call in calls)
+    assert all(call[2] is True for call in calls)

@@ -78,11 +78,12 @@ jobs:
         working-directory: assignments/03-olist-late-delivery-mlops
         run: docker build -f Dockerfile.dev -t qafza-assignment-03-dev:ci .
 
-      - name: Verify trainer direct-script imports
+      - name: Verify trainer direct-script imports and DVC container mode
         working-directory: assignments/03-olist-late-delivery-mlops
         run: |
           docker compose run --rm --no-deps trainer python scripts/predict_cli.py --help
           docker compose run --rm --no-deps trainer python scripts/record_outcome.py --help
+          docker compose run --rm --no-deps trainer sh -lc 'dvc config core.no_scm true --local && dvc root'
 
       - name: Smoke test Compose infrastructure and MLflow network access
         working-directory: assignments/03-olist-late-delivery-mlops

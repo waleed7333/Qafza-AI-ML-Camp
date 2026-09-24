@@ -12,3 +12,6 @@ models/cache/
 .dvc/tmp/
 coverage.xml
 htmlcov/
+
+data/raw/
+artifacts/

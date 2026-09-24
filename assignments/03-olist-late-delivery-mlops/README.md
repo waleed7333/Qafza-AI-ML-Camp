@@ -315,7 +315,10 @@ After the initial bootstrap:
 ```bash
 make dvc-track
 make dvc-push
+make dvc-status
 ```
+
+The Docker tool container does not mount the repository's parent `.git` directory. DVC therefore uses a Git-ignored local setting (`.dvc/config.local`) with `core.no_scm=true` inside the container, while the host Git repository still versions the generated `.dvc` pointer files and project configuration.
 
 This versions:
 

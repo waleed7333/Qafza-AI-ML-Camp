@@ -24,3 +24,15 @@ def test_minio_init_waits_for_minio_health():
 def test_trainer_exposes_project_root_on_pythonpath():
     trainer = COMPOSE.split("  trainer:", 1)[1].split("\n\nvolumes:", 1)[0]
     assert "PYTHONPATH: /workspace" in trainer
+
+
+def test_large_dvc_targets_are_git_ignored():
+    gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    assert "data/raw/" in gitignore
+    assert "artifacts/" in gitignore
+
+
+def test_makefile_uses_local_no_scm_for_containerized_dvc():
+    makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+    assert "dvc config core.no_scm true --local" in makefile
+    assert "dvc-status:" in makefile

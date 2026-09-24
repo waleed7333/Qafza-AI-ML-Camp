@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install install-dev up down bootstrap test lint format-check format parity dvc-track dvc-push dvc-pull drift
+.PHONY: install install-dev up down bootstrap test lint format-check format parity dvc-track dvc-push dvc-pull dvc-status drift
 
 install:
 	python -m pip install -r requirements/runtime.txt -r requirements/training.txt
@@ -37,11 +37,14 @@ drift:
 	docker compose run --rm trainer python scripts/check_drift.py
 
 dvc-track:
-	docker compose run --rm trainer dvc add data/raw artifacts
+	docker compose run --rm trainer sh -lc 'dvc config core.no_scm true --local && dvc add data/raw artifacts'
 	git add data/raw.dvc artifacts.dvc .gitignore
 
 dvc-push:
-	docker compose run --rm trainer dvc push
+	docker compose run --rm trainer sh -lc 'dvc config core.no_scm true --local && dvc push'
 
 dvc-pull:
-	docker compose run --rm trainer dvc pull
+	docker compose run --rm trainer sh -lc 'dvc config core.no_scm true --local && dvc pull'
+
+dvc-status:
+	docker compose run --rm trainer sh -lc 'dvc config core.no_scm true --local && dvc status -c'

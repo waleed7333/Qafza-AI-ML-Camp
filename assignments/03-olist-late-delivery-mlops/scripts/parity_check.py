@@ -10,6 +10,7 @@ import pandas as pd
 from src.qafza_mlops.config import load_settings
 from src.qafza_mlops.features import SOURCE_COLUMNS, make_features
 from src.qafza_mlops.model_loader import load_model_bundle
+from src.qafza_mlops.preprocessing import transform_with_fitted_preprocessor
 
 
 def main() -> int:
@@ -20,15 +21,21 @@ def main() -> int:
     local_preprocessor = joblib.load(root / "artifacts/05_features/preprocessor.joblib")
     local_model = joblib.load(root / "artifacts/06_model/model.joblib")
     local_features = make_features(source)
-    local_matrix = pd.DataFrame(
-        local_preprocessor.transform(local_features),
-        columns=local_preprocessor.get_feature_names_out(),
-        index=local_features.index,
+    local_feature_names = local_preprocessor.get_feature_names_out().tolist()
+    local_matrix = transform_with_fitted_preprocessor(
+        local_preprocessor,
+        local_features,
+        local_feature_names,
     )
     expected = float(local_model.predict_proba(local_matrix)[:, 1][0])
 
     bundle = load_model_bundle(load_settings())
-    served_matrix = bundle.preprocessor.transform(make_features(source))
+    served_features = make_features(source)
+    served_matrix = transform_with_fitted_preprocessor(
+        bundle.preprocessor,
+        served_features,
+        bundle.feature_names,
+    )
     actual = float(bundle.model.predict_proba(served_matrix)[:, 1][0])
 
     if not np.isclose(expected, actual, rtol=0, atol=1e-12):

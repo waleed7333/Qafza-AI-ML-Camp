@@ -48,17 +48,23 @@ def raw_data_present() -> bool:
     return all((RAW_DATA_DIR / name).is_file() for name in EXPECTED_RAW_FILES)
 
 
+def run_dvc(*args: str) -> None:
+    """Run DVC in Docker-safe mode when Git metadata is not mounted."""
+    subprocess.run(
+        ["dvc", "config", "core.no_scm", "true", "--local"],
+        cwd=ROOT,
+        check=True,
+    )
+    subprocess.run(["dvc", *args], cwd=ROOT, check=True)
+
+
 def ensure_raw_data() -> None:
     if raw_data_present():
         return
 
     if RAW_DATA_POINTER.is_file():
         print("Raw data is missing; attempting DVC pull.", flush=True)
-        subprocess.run(
-            ["dvc", "pull", str(RAW_DATA_POINTER)],
-            cwd=ROOT,
-            check=True,
-        )
+        run_dvc("pull", str(RAW_DATA_POINTER))
 
     if not raw_data_present():
         raise SystemExit(
