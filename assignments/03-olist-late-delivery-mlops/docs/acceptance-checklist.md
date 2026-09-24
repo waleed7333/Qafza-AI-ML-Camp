@@ -1,12 +1,12 @@
-# Assignment 03 local acceptance checklist
+# Assignment 03 re-verification checklist
 
 The completed acceptance evidence is recorded in [`acceptance-report.md`](acceptance-report.md).
 
-Do not merge `assignment-03` into `main` until this checklist is completed on the target machine and the final branch CI is green.
+Assignment 03 is integrated into `main`. Use this checklist to reproduce or re-verify the completed system on another environment or against a specific reviewed commit.
 
 ## Prepare
 
-- Switch to branch `assignment-03`.
+- Switch to `main` and pull the latest reviewed state, or check out a specific reviewed commit for an exact reproduction.
 - Confirm the working tree is clean before adding local data.
 - Copy `.env.example` to `.env`.
 - Put the nine original Olist CSV files in `data/raw/`, or configure a durable DVC remote after the DVC pointer exists.
@@ -68,7 +68,7 @@ Inspect:
 
 - Submit a negative `total_price`; expect HTTP 422.
 - Submit an estimated delivery timestamp before purchase; expect HTTP 422.
-- Temporarily introduce a failing pytest assertion and confirm CI stops before Docker publication. Revert the deliberate failure immediately.
+- Temporarily introduce a failing pytest assertion and confirm the `quality` job fails and the dependent `production-image` validation job does not run. Revert the deliberate failure immediately.
 
 ## DVC snapshot
 
@@ -90,11 +90,11 @@ A local MinIO DVC remote is not sufficient for a different physical machine. For
 
 ## Final Git review
 
-Before merge:
+For any future change or re-verification branch:
 
 ```bash
 git status
-git diff main...assignment-03
+git diff origin/main...HEAD
 ```
 
-Only after local end-to-end acceptance and the final review should Assignment 03 be merged into `main`.
+Do not commit raw CSV files, generated model artifacts, local DVC cache/config, `.env`, or runtime logs. Any future code change should pass the same CI gates before it is integrated into `main`.

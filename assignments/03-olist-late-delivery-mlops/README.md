@@ -145,10 +145,13 @@ No Python installation is required for the Docker-first path.
 From the repository root:
 
 ```bash
-git switch assignment-03
+git switch main
+git pull --ff-only origin main
 cd assignments/03-olist-late-delivery-mlops
 cp .env.example .env
 ```
+
+For an exact historical reproduction, check out a reviewed commit instead of the moving `main` branch.
 
 Place the nine original Olist CSV files under:
 
@@ -467,7 +470,7 @@ cp examples/order.json /tmp/bad-order.json
 
 FastAPI/Pydantic returns HTTP 422.
 
-A deliberately failing pytest test returns a non-zero exit code, and the GitHub Actions quality job stops before Docker publication.
+A deliberately failing pytest test returns a non-zero exit code. Because the production-image job depends on both `quality` and `infrastructure`, a quality failure prevents that downstream image-build validation job from starting. CI never publishes images automatically.
 
 ## Acceptance evidence
 
@@ -478,7 +481,7 @@ The completed local acceptance run, observed results, CI evidence, and known DVC
 The reproducibility sequence is:
 
 1. clone the repository;
-2. switch to the intended Task 3 commit/branch;
+2. use the reviewed `main` branch, or check out an exact reviewed commit for a fixed historical reproduction;
 3. obtain the DVC-managed raw data from a durable remote, or place the original nine CSV files under `data/raw`;
 4. copy `.env.example` to `.env`;
 5. run `docker compose up --build`;

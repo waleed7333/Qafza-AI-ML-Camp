@@ -2,7 +2,7 @@
 
 ## Status
 
-**Local functional acceptance: passed.**
+**Local functional acceptance: passed. Final integration into `main`: passed.**
 
 This report records the observed acceptance evidence for Assignment 03 on 2026-09-24. The functional acceptance baseline was commit:
 
@@ -10,7 +10,13 @@ This report records the observed acceptance evidence for Assignment 03 on 2026-0
 5ff62fc87f9d550b26ae7081a40b35341a7f6a87
 ```
 
-Any later commit merged to `main` must preserve these contracts and pass the repository CI before the assignment is considered finally integrated.
+The runtime integration commit was:
+
+```text
+7e196e519721d3ee4d42c050872c30faa9d40a66
+```
+
+It was fast-forwarded to `main` after branch acceptance. GitHub Actions run `36020844977` then passed on `main`, including quality, infrastructure/MLflow smoke, and production-image build validation. Container publication remained manual and was not performed by CI.
 
 ## Environment and orchestration
 
@@ -146,13 +152,15 @@ The Docker job passed:
 
 Container publication is intentionally outside CI. The workflow validates the production image build but never logs in to a registry or pushes an image. Releases are manual owner actions.
 
-## Final integration gate
+## Final integration result
 
-Before merging to `main`:
+The integration gate was completed:
 
-1. the working tree should be clean;
-2. the final `assignment-03` CI should be green;
-3. the branch should contain no unexpected raw/generated files or secrets;
-4. the final diff against `main` should be limited to the intended repository documentation, Assignment 03 workflow, and Assignment 03 project files.
+- the accepted development branch was ahead of `main` with no missing `main` commits;
+- the final branch CI passed;
+- the reviewed diff contained only the intended repository documentation, Assignment 03 workflow, and Assignment 03 project files;
+- no raw/generated data, local secrets, DVC cache/config, or runtime logs were committed;
+- `main` was fast-forwarded to the accepted runtime commit;
+- `main` CI run `36020844977` passed all quality, infrastructure, MLflow artifact/registry, and production-image build checks.
 
-After merge, the `main` CI should be verified. Any GHCR release is a separate manual owner action performed only after the reviewed `main` commit is selected for release.
+Any GHCR release remains a separate manual owner action. CI has no registry-login step, no package-write permission, and no image-push step.
