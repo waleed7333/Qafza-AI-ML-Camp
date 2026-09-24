@@ -100,7 +100,40 @@ jobs:
             sleep 2
           done
 
-          docker compose exec -T mlflow python -c "import mlflow; from mlflow import MlflowClient; mlflow.set_tracking_uri('http://mlflow:5000'); print(MlflowClient().search_registered_models(max_results=1))"
+          docker compose exec -T mlflow python - <<'PY'
+          import numpy as np
+          import mlflow
+          import mlflow.sklearn
+          from mlflow import MlflowClient
+          from sklearn.linear_model import LogisticRegression
+
+          mlflow.set_tracking_uri("http://mlflow:5000")
+          mlflow.set_experiment("ci-infrastructure-smoke")
+
+          X = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+          y = np.array([0, 0, 1, 1])
+          model = LogisticRegression(random_state=42).fit(X, y)
+
+          with mlflow.start_run() as run:
+              mlflow.log_metric("smoke_accuracy", float(model.score(X, y)))
+              info = mlflow.sklearn.log_model(
+                  sk_model=model,
+                  name="model",
+                  registered_model_name="ci-smoke-model",
+                  serialization_format="cloudpickle",
+              )
+
+          assert info.registered_model_version is not None
+          version = str(info.registered_model_version)
+          client = MlflowClient()
+          client.set_registered_model_alias("ci-smoke-model", "champion", version)
+          resolved = client.get_model_version_by_alias("ci-smoke-model", "champion")
+          assert str(resolved.version) == version
+
+          loaded = mlflow.sklearn.load_model("models:/ci-smoke-model@champion")
+          assert loaded.predict(X).tolist() == model.predict(X).tolist()
+          print(f"MLflow smoke OK: run={run.info.run_id} version={version}")
+          PY
 
       - name: Log in to GHCR
         if: github.event_name == 'push'
