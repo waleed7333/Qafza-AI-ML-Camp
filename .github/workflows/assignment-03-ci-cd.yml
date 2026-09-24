@@ -67,6 +67,13 @@ jobs:
         working-directory: assignments/03-olist-late-delivery-mlops
         run: docker compose config > /dev/null
 
+      - name: Verify external service images are pullable
+        run: |
+          docker pull postgres:16@sha256:4b7183ac05f8ef417db21fd72d71047a4238340c261d3cc3ddb6d579ab5071ae
+          docker pull quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+          docker pull quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+          docker pull prom/prometheus:v2.55.1
+
       - name: Build bootstrap development image
         working-directory: assignments/03-olist-late-delivery-mlops
         run: docker build -f Dockerfile.dev -t qafza-assignment-03-dev:ci .
