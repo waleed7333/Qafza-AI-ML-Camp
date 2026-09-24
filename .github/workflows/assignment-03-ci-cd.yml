@@ -142,7 +142,7 @@ jobs:
           PY
 
       - name: Log in to GHCR
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -154,5 +154,7 @@ jobs:
         with:
           context: assignments/03-olist-late-delivery-mlops
           file: assignments/03-olist-late-delivery-mlops/Dockerfile
-          push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/waleed7333/qafza-assignment-03:${{ github.sha }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            ghcr.io/waleed7333/qafza-assignment-03:${{ github.sha }}
+            ghcr.io/waleed7333/qafza-assignment-03:latest
