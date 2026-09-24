@@ -58,10 +58,11 @@ services:
       - /bin/sh
       - -c
       - |
-        until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; do
+        until mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null 2>&1; do
           sleep 2
         done
-        mc mb --ignore-existing "local/$$MLFLOW_ARTIFACT_BUCKET"
+        echo "MinIO is ready; creating required buckets."
+        mc mb --ignore-existing "local/$MLFLOW_ARTIFACT_BUCKET"
         mc mb --ignore-existing "local/$$DVC_BUCKET"
 
   mlflow:
@@ -75,6 +76,8 @@ services:
       - 0.0.0.0
       - --port
       - "5000"
+      - --allowed-hosts
+      - "mlflow:5000,localhost:*,127.0.0.1:*"
       - --backend-store-uri
       - postgresql+psycopg://${POSTGRES_USER:-qafza}:${POSTGRES_PASSWORD:-qafza_dev_password}@postgres:5432/${POSTGRES_DB:-qafza_mlops}
       - --artifacts-destination

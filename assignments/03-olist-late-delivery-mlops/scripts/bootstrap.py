@@ -29,15 +29,15 @@ EXPECTED_RAW_FILES = {
 
 def registered_model_exists() -> bool:
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000"))
+    registered_name = os.getenv("MODEL_REGISTERED_NAME", "olist_late_delivery")
+    alias = os.getenv("MODEL_ALIAS", "champion")
     client = MlflowClient()
-    try:
-        client.get_model_version_by_alias(
-            os.getenv("MODEL_REGISTERED_NAME", "olist_late_delivery"),
-            os.getenv("MODEL_ALIAS", "champion"),
-        )
-    except Exception:
-        return False
-    return True
+
+    models = client.search_registered_models(
+        filter_string=f"name='{registered_name}'",
+        max_results=1,
+    )
+    return bool(models) and alias in models[0].aliases
 
 
 def raw_data_present() -> bool:
