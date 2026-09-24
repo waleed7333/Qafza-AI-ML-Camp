@@ -6,23 +6,21 @@ ARG MC_RELEASE=RELEASE.2025-08-13T08-35-41Z
 
 RUN apk add --no-cache ca-certificates curl \
     && case "$TARGETARCH" in \
-         amd64|arm64) arch="$TARGETARCH" ;; \
+         amd64) \
+           minio_sha="7c5bd8512c6e966455b1d198209358b2d191c77a83ab377c4073281065fb855f"; \
+           mc_sha="01f866e9c5f9b87c2b09116fa5d7c06695b106242d829a8bb32990c00312e891" ;; \
+         arm64) \
+           minio_sha="5c83cd2cf151717ba0243f73e1c7802ff36e272b67144bdd7f1f7d684fd6f03d"; \
+           mc_sha="14c8c9616cfce4636add161304353244e8de383b2e2752c0e9dad01d4c27c12c" ;; \
          *) echo "Unsupported architecture: $TARGETARCH" >&2; exit 1 ;; \
        esac \
-    && minio_base="https://dl.min.io/server/minio/release/linux-$arch/archive" \
-    && mc_base="https://dl.min.io/client/mc/release/linux-$arch/archive" \
-    && curl -fsSL --retry 5 --retry-all-errors \
-         -o /usr/local/bin/minio "$minio_base/minio.$MINIO_RELEASE" \
-    && curl -fsSL --retry 5 --retry-all-errors \
-         -o /tmp/minio.sha256sum "$minio_base/minio.$MINIO_RELEASE.sha256sum" \
-    && echo "$(awk '{print $1}' /tmp/minio.sha256sum)  /usr/local/bin/minio" | sha256sum -c - \
-    && curl -fsSL --retry 5 --retry-all-errors \
-         -o /usr/local/bin/mc "$mc_base/mc.$MC_RELEASE" \
-    && curl -fsSL --retry 5 --retry-all-errors \
-         -o /tmp/mc.sha256sum "$mc_base/mc.$MC_RELEASE.sha256sum" \
-    && echo "$(awk '{print $1}' /tmp/mc.sha256sum)  /usr/local/bin/mc" | sha256sum -c - \
-    && chmod +x /usr/local/bin/minio /usr/local/bin/mc \
-    && rm -f /tmp/minio.sha256sum /tmp/mc.sha256sum
+    && minio_url="https://github.com/minio/minio/releases/download/$MINIO_RELEASE/minio.linux-$TARGETARCH.$MINIO_RELEASE" \
+    && mc_url="https://github.com/minio/mc/releases/download/$MC_RELEASE/mc.linux-$TARGETARCH.$MC_RELEASE" \
+    && curl -fsSL --retry 5 --retry-all-errors -o /usr/local/bin/minio "$minio_url" \
+    && echo "$minio_sha  /usr/local/bin/minio" | sha256sum -c - \
+    && curl -fsSL --retry 5 --retry-all-errors -o /usr/local/bin/mc "$mc_url" \
+    && echo "$mc_sha  /usr/local/bin/mc" | sha256sum -c - \
+    && chmod +x /usr/local/bin/minio /usr/local/bin/mc
 
 EXPOSE 9000 9001
 

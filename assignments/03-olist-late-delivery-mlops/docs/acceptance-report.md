@@ -120,7 +120,7 @@ A true second-machine `dvc pull` requires an S3-compatible endpoint reachable by
 
 ## Container-source resilience
 
-MinIO server/client releases are pinned in `Dockerfile.minio` and downloaded from the official MinIO release archive with SHA256 verification during the image build. This avoids depending on the continued anonymous availability of historical MinIO images in third-party container registries.
+MinIO server/client releases are pinned in `Dockerfile.minio` and downloaded from the official MinIO GitHub release assets with pinned SHA256 verification during the image build. This avoids depending on the continued anonymous availability of historical MinIO images in third-party container registries.
 
 ## CI evidence
 
