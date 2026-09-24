@@ -83,7 +83,13 @@ jobs:
         run: |
           set -euo pipefail
           cleanup() {
+            status=$?
+            if [ "$status" -ne 0 ]; then
+              echo "=== Compose smoke-test logs ==="
+              docker compose logs --no-color --tail=250 postgres minio minio-init mlflow || true
+            fi
             docker compose down -v --remove-orphans >/dev/null 2>&1 || true
+            exit "$status"
           }
           trap cleanup EXIT
 
